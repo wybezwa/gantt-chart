@@ -272,6 +272,7 @@ html = f"""<!DOCTYPE html>
   <h1 id="chart-title"></h1>
   <div>
     <button class="btn btn-export" onclick="exportJSON()" title="Download current data as JSON">&#x2B07; Export JSON</button>
+    <button class="btn" style="background:#888;color:#fff" onclick="resetLocal()" title="Discard browser edits and reload original data">&#x21BA; Reset</button>
   </div>
 </div>
 
@@ -411,7 +412,7 @@ function renderBody() {{
       tdTask.className = 'task-name';
       tdTask.contentEditable = 'true';
       tdTask.textContent = item.task;
-      tdTask.addEventListener('blur', () => {{ item.task = tdTask.textContent.trim(); }});
+      tdTask.addEventListener('blur', () => {{ item.task = tdTask.textContent.trim(); saveLocal(); }});
       tr.appendChild(tdTask);
 
       // Person (dropdown)
@@ -420,7 +421,7 @@ function renderBody() {{
       const selPerson = document.createElement('select');
       selPerson.innerHTML = '<option value="">—</option>' +
         DATA.people.map(p => `<option value="${{p}}" ${{p===item.person?'selected':''}}>${{p}}</option>`).join('');
-      selPerson.addEventListener('change', () => {{ item.person = selPerson.value; }});
+      selPerson.addEventListener('change', () => {{ item.person = selPerson.value; saveLocal(); }});
       tdPerson.appendChild(selPerson);
       tr.appendChild(tdPerson);
 
@@ -434,6 +435,7 @@ function renderBody() {{
         if (/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(val)) {{
           item.start = val;
           renderCalRow(tr, item, cat, color);
+          saveLocal();
         }} else {{
           tdStart.textContent = item.start;
         }}
@@ -450,6 +452,7 @@ function renderBody() {{
         if (!isNaN(val) && val > 0) {{
           item.days = val;
           renderCalRow(tr, item, cat, color);
+          saveLocal();
         }} else {{
           tdDays.textContent = item.days;
         }}
@@ -463,7 +466,7 @@ function renderBody() {{
       selEffort.innerHTML = ['S','M','L'].map(v =>
         `<option value="${{v}}" ${{v===item.effort?'selected':''}}>${{v}}</option>`
       ).join('');
-      selEffort.addEventListener('change', () => {{ item.effort = selEffort.value; }});
+      selEffort.addEventListener('change', () => {{ item.effort = selEffort.value; saveLocal(); }});
       tdEffort.appendChild(selEffort);
       tr.appendChild(tdEffort);
 
@@ -480,7 +483,7 @@ function renderBody() {{
         tdConf.style.color = c[1];
         tdConf.className = 'conf';
       }}
-      selConf.addEventListener('change', () => {{ item.confidence = selConf.value; updateConfStyle(); }});
+      selConf.addEventListener('change', () => {{ item.confidence = selConf.value; updateConfStyle(); saveLocal(); }});
       tdConf.appendChild(selConf);
       tr.appendChild(tdConf);
       updateConfStyle();
@@ -591,8 +594,36 @@ function renderLegend() {{
     ).join('');
 
   document.getElementById('footer').textContent =
-    'Click any cell to edit \u2022 Bars update instantly \u2022 Use Export JSON to save changes \u2022 ' +
-    'Last generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}';
+    'Click any cell to edit \u2022 Bars update instantly \u2022 Changes auto-saved in browser \u2022 Use Export JSON to commit changes \u2022 ' +
+    'Last generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}' +
+    (localStorage.getItem(STORAGE_KEY) ? ' \u2022 \u26A0 You have unsaved browser edits (use Export or Reset)' : '');
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Persistence (localStorage)
+// ═══════════════════════════════════════════════════════════════════
+const STORAGE_KEY = 'gantt_data_v1';
+
+function saveLocal() {{
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+}}
+
+function loadLocal() {{
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+  try {{
+    const parsed = JSON.parse(saved);
+    // Merge saved task data into DATA
+    if (parsed.tasks) DATA.tasks = parsed.tasks;
+    if (parsed.title) DATA.title = parsed.title;
+    if (parsed.milestones) DATA.milestones = parsed.milestones;
+  }} catch(e) {{ /* ignore corrupted data */ }}
+}}
+
+function resetLocal() {{
+  if (!confirm('Discard all browser edits and reload the original data?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
 }}
 
 // ═══════════════════════════════════════════════════════════════════
@@ -610,6 +641,7 @@ function exportJSON() {{
 // ═══════════════════════════════════════════════════════════════════
 // Init
 // ═══════════════════════════════════════════════════════════════════
+loadLocal();
 render();
 window.addEventListener('resize', drawLines);
 document.getElementById('gantt-wrapper').addEventListener('scroll', drawLines);
