@@ -1,0 +1,625 @@
+"""Generate an interactive HTML Gantt chart from gantt_data.json.
+
+The output is a self-contained HTML file where:
+- All data cells are editable inline (click to edit)
+- Bars redraw instantly when Start or Days change
+- Export button downloads updated data as JSON
+- No external dependencies
+"""
+import json
+import os
+from datetime import datetime, timedelta
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(SCRIPT_DIR, "gantt_data.json")
+OUTPUT_FILE = os.path.join(SCRIPT_DIR, "index.html")
+
+with open(DATA_FILE, "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+# Embed the data as JSON in the HTML — JS handles all rendering
+data_json = json.dumps(data, indent=2, ensure_ascii=False)
+
+html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gantt Chart</title>
+<style>
+  :root {{
+    --header-bg: #2F5496;
+    --header-text: #fff;
+    --weekend-bg: #f5f5f5;
+    --border: #e0e0e0;
+    --cell-h: 26px;
+    --cal-w: 22px;
+  }}
+
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+
+  body {{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    color: #333;
+    background: #fafafa;
+    padding: 20px 20px 60px;
+  }}
+
+  .top-bar {{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }}
+
+  h1 {{
+    color: var(--header-bg);
+    font-size: 20px;
+  }}
+
+  .btn {{
+    padding: 6px 14px;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }}
+
+  .btn-export {{
+    background: var(--header-bg);
+    color: #fff;
+  }}
+  .btn-export:hover {{ background: #1e3a6e; }}
+
+  .btn-add {{
+    background: #00B050;
+    color: #fff;
+  }}
+  .btn-add:hover {{ background: #008a3e; }}
+
+  .gantt-wrapper {{
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    position: relative;
+  }}
+
+  table {{
+    border-collapse: collapse;
+    white-space: nowrap;
+  }}
+
+  /* Month header */
+  .month-header {{
+    background: #D6E4F0;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }}
+
+  /* Column headers */
+  th {{
+    background: var(--header-bg);
+    color: var(--header-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 6px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+  }}
+
+  th.day-h {{
+    font-size: 9px;
+    font-weight: 400;
+    padding: 5px 0;
+    min-width: var(--cal-w);
+    max-width: var(--cal-w);
+    width: var(--cal-w);
+  }}
+
+  th.day-h.we {{ background: #1e3a6e; }}
+
+  /* Data cells */
+  td {{
+    border-bottom: 1px solid #f0f0f0;
+    padding: 3px 6px;
+    height: var(--cell-h);
+  }}
+
+  td.task-name {{
+    min-width: 280px;
+    max-width: 350px;
+    font-size: 12px;
+    padding-left: 12px;
+  }}
+
+  td.person {{ min-width: 70px; text-align: center; font-size: 11px; color: #555; }}
+  td.date {{ min-width: 90px; text-align: center; font-size: 11px; font-family: monospace; }}
+  td.days {{ min-width: 35px; text-align: center; font-size: 11px; }}
+  td.effort {{ min-width: 40px; text-align: center; font-size: 11px; }}
+  td.conf {{ min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }}
+
+  td.conf-h {{ background: #C6EFCE; color: #1a6b1a; }}
+  td.conf-m {{ background: #FFEB9C; color: #7a6100; }}
+  td.conf-l {{ background: #FFC7CE; color: #8b1a1a; }}
+
+  /* Editable cells */
+  td[contenteditable="true"] {{
+    cursor: text;
+    outline: none;
+    transition: background 0.15s;
+  }}
+  td[contenteditable="true"]:hover {{
+    background: #e8f0fe !important;
+  }}
+  td[contenteditable="true"]:focus {{
+    background: #d2e3fc !important;
+    box-shadow: inset 0 0 0 2px #4285f4;
+  }}
+
+  /* Select dropdowns embedded in cells */
+  td select {{
+    border: none;
+    background: transparent;
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 0;
+  }}
+  td select:hover {{ background: #e8f0fe; }}
+  td select:focus {{ background: #d2e3fc; box-shadow: inset 0 0 0 2px #4285f4; }}
+
+  /* Calendar cells */
+  td.cal {{
+    min-width: var(--cal-w);
+    max-width: var(--cal-w);
+    width: var(--cal-w);
+    padding: 0;
+    position: relative;
+  }}
+
+  td.cal.we {{ background: var(--weekend-bg); }}
+  td.cal.bar {{ /* color set by JS */ }}
+
+  /* Category header rows */
+  tr.cat-row td {{
+    background: #f8f9fa;
+    padding: 6px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 700;
+    font-size: 13px;
+  }}
+
+  .cat-swatch {{
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 6px;
+  }}
+
+  /* Milestone and today lines */
+  .vline {{
+    position: absolute;
+    top: 0;
+    width: 2px;
+    pointer-events: none;
+    z-index: 5;
+  }}
+
+  /* Legend */
+  .legend {{
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+  }}
+  .legend-item {{ display: flex; align-items: center; gap: 6px; }}
+  .legend-swatch {{
+    width: 16px; height: 16px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }}
+
+  .info {{ margin-top: 12px; font-size: 12px; color: #666; }}
+  .info strong {{ color: #333; }}
+
+  .lines-legend {{ margin-top: 8px; font-size: 12px; }}
+  .lines-legend .ll-swatch {{
+    display: inline-block; width: 20px; height: 3px;
+    vertical-align: middle; margin-right: 4px;
+  }}
+
+  .footer {{
+    margin-top: 16px; font-size: 11px; color: #999; font-style: italic;
+  }}
+
+  /* Delete button in rows */
+  .del-btn {{
+    opacity: 0;
+    cursor: pointer;
+    color: #cc0000;
+    font-size: 14px;
+    transition: opacity 0.15s;
+    border: none;
+    background: none;
+    padding: 0 4px;
+  }}
+  tr:hover .del-btn {{ opacity: 0.6; }}
+  .del-btn:hover {{ opacity: 1 !important; }}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1 id="chart-title"></h1>
+  <div>
+    <button class="btn btn-export" onclick="exportJSON()" title="Download current data as JSON">&#x2B07; Export JSON</button>
+  </div>
+</div>
+
+<div class="gantt-wrapper" id="gantt-wrapper">
+  <table id="gantt-table">
+    <thead id="gantt-head"></thead>
+    <tbody id="gantt-body"></tbody>
+  </table>
+</div>
+
+<div class="legend" id="legend"></div>
+<div class="info" id="info"></div>
+<div class="lines-legend" id="lines-legend"></div>
+<div class="footer" id="footer"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// Gantt data (embedded from JSON)
+// ═══════════════════════════════════════════════════════════════════
+const DATA = {data_json};
+
+// ═══════════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════════
+function parseDate(s) {{ return new Date(s + 'T00:00:00'); }}
+function fmtDate(d) {{
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${{y}}-${{m}}-${{dd}}`;
+}}
+function addDays(d, n) {{ const r = new Date(d); r.setDate(r.getDate() + n); return r; }}
+function daysBetween(a, b) {{ return Math.round((b - a) / 86400000); }}
+function isWeekend(d) {{ return d.getDay() === 0 || d.getDay() === 6; }}
+
+function lighten(hex) {{
+  const h = hex.replace('#','');
+  let r = parseInt(h.substring(0,2),16);
+  let g = parseInt(h.substring(2,4),16);
+  let b = parseInt(h.substring(4,6),16);
+  r = Math.min(255, r + Math.floor((255-r)/2));
+  g = Math.min(255, g + Math.floor((255-g)/2));
+  b = Math.min(255, b + Math.floor((255-b)/2));
+  return `#${{r.toString(16).padStart(2,'0')}}${{g.toString(16).padStart(2,'0')}}${{b.toString(16).padStart(2,'0')}}`;
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Calendar setup
+// ═══════════════════════════════════════════════════════════════════
+const calStart = parseDate(DATA.calendar.start);
+const calEnd = parseDate(DATA.calendar.end);
+const numDays = daysBetween(calStart, calEnd) + 1;
+const today = new Date(); today.setHours(0,0,0,0);
+const todayOffset = daysBetween(calStart, today);
+
+// ═══════════════════════════════════════════════════════════════════
+// Render
+// ═══════════════════════════════════════════════════════════════════
+function render() {{
+  document.getElementById('chart-title').textContent = DATA.title;
+  renderHead();
+  renderBody();
+  renderLegend();
+  drawLines();
+}}
+
+function renderHead() {{
+  const thead = document.getElementById('gantt-head');
+  thead.innerHTML = '';
+
+  // Month row
+  const mrow = document.createElement('tr');
+  const mblank = document.createElement('th');
+  mblank.colSpan = 7; mblank.className = 'month-header';
+  mrow.appendChild(mblank);
+
+  let curMonth = null, curTh = null;
+  for (let d = 0; d < numDays; d++) {{
+    const dt = addDays(calStart, d);
+    const key = dt.toLocaleString('en', {{month:'long', year:'numeric'}});
+    if (key !== curMonth) {{
+      curTh = document.createElement('th');
+      curTh.className = 'month-header';
+      curTh.colSpan = 1;
+      curTh.textContent = key;
+      mrow.appendChild(curTh);
+      curMonth = key;
+    }} else {{
+      curTh.colSpan++;
+    }}
+  }}
+  thead.appendChild(mrow);
+
+  // Column headers
+  const hrow = document.createElement('tr');
+  ['Task', 'Person', 'Start', 'Days', 'Effort', 'Conf.', ''].forEach((h, i) => {{
+    const th = document.createElement('th');
+    th.textContent = h;
+    if (i === 6) th.style.display = 'none'; // hidden actions col
+    hrow.appendChild(th);
+  }});
+
+  for (let d = 0; d < numDays; d++) {{
+    const dt = addDays(calStart, d);
+    const th = document.createElement('th');
+    th.className = 'day-h' + (isWeekend(dt) ? ' we' : '');
+    th.textContent = dt.getDate();
+    th.title = fmtDate(dt);
+    hrow.appendChild(th);
+  }}
+  thead.appendChild(hrow);
+}}
+
+function renderBody() {{
+  const tbody = document.getElementById('gantt-body');
+  tbody.innerHTML = '';
+
+  DATA.tasks.forEach((group, gi) => {{
+    const cat = group.category;
+    const color = DATA.categories[cat];
+
+    // Category header row
+    const crow = document.createElement('tr');
+    crow.className = 'cat-row';
+    const clabel = document.createElement('td');
+    clabel.colSpan = 7 + numDays;
+    clabel.innerHTML = `<span class="cat-swatch" style="background:${{color}}"></span>${{cat}}`;
+    crow.appendChild(clabel);
+    tbody.appendChild(crow);
+
+    // Task rows
+    group.items.forEach((item, ti) => {{
+      const tr = document.createElement('tr');
+
+      // Task name (editable)
+      const tdTask = document.createElement('td');
+      tdTask.className = 'task-name';
+      tdTask.contentEditable = 'true';
+      tdTask.textContent = item.task;
+      tdTask.addEventListener('blur', () => {{ item.task = tdTask.textContent.trim(); }});
+      tr.appendChild(tdTask);
+
+      // Person (dropdown)
+      const tdPerson = document.createElement('td');
+      tdPerson.className = 'person';
+      const selPerson = document.createElement('select');
+      selPerson.innerHTML = '<option value="">—</option>' +
+        DATA.people.map(p => `<option value="${{p}}" ${{p===item.person?'selected':''}}>${{p}}</option>`).join('');
+      selPerson.addEventListener('change', () => {{ item.person = selPerson.value; }});
+      tdPerson.appendChild(selPerson);
+      tr.appendChild(tdPerson);
+
+      // Start date (editable)
+      const tdStart = document.createElement('td');
+      tdStart.className = 'date';
+      tdStart.contentEditable = 'true';
+      tdStart.textContent = item.start;
+      tdStart.addEventListener('blur', () => {{
+        const val = tdStart.textContent.trim();
+        if (/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(val)) {{
+          item.start = val;
+          renderCalRow(tr, item, cat, color);
+        }} else {{
+          tdStart.textContent = item.start;
+        }}
+      }});
+      tr.appendChild(tdStart);
+
+      // Days (editable)
+      const tdDays = document.createElement('td');
+      tdDays.className = 'days';
+      tdDays.contentEditable = 'true';
+      tdDays.textContent = item.days;
+      tdDays.addEventListener('blur', () => {{
+        const val = parseInt(tdDays.textContent.trim());
+        if (!isNaN(val) && val > 0) {{
+          item.days = val;
+          renderCalRow(tr, item, cat, color);
+        }} else {{
+          tdDays.textContent = item.days;
+        }}
+      }});
+      tr.appendChild(tdDays);
+
+      // Effort (dropdown)
+      const tdEffort = document.createElement('td');
+      tdEffort.className = 'effort';
+      const selEffort = document.createElement('select');
+      selEffort.innerHTML = ['S','M','L'].map(v =>
+        `<option value="${{v}}" ${{v===item.effort?'selected':''}}>${{v}}</option>`
+      ).join('');
+      selEffort.addEventListener('change', () => {{ item.effort = selEffort.value; }});
+      tdEffort.appendChild(selEffort);
+      tr.appendChild(tdEffort);
+
+      // Confidence (dropdown)
+      const tdConf = document.createElement('td');
+      const selConf = document.createElement('select');
+      selConf.innerHTML = ['H','M','L'].map(v =>
+        `<option value="${{v}}" ${{v===item.confidence?'selected':''}}>${{v}}</option>`
+      ).join('');
+      const confColors = {{ H: ['#C6EFCE','#1a6b1a'], M: ['#FFEB9C','#7a6100'], L: ['#FFC7CE','#8b1a1a'] }};
+      function updateConfStyle() {{
+        const c = confColors[selConf.value] || ['transparent','#333'];
+        tdConf.style.background = c[0];
+        tdConf.style.color = c[1];
+        tdConf.className = 'conf';
+      }}
+      selConf.addEventListener('change', () => {{ item.confidence = selConf.value; updateConfStyle(); }});
+      tdConf.appendChild(selConf);
+      tr.appendChild(tdConf);
+      updateConfStyle();
+
+      // Hidden delete button column
+      const tdDel = document.createElement('td');
+      tdDel.style.display = 'none';
+      tr.appendChild(tdDel);
+
+      // Calendar cells
+      renderCalRow(tr, item, cat, color);
+
+      tbody.appendChild(tr);
+    }});
+  }});
+}}
+
+function renderCalRow(tr, item, cat, color) {{
+  // Remove existing calendar cells
+  while (tr.children.length > 7) tr.removeChild(tr.lastChild);
+
+  const startDt = parseDate(item.start);
+  const endDt = addDays(startDt, item.days);
+  const isDelivery = cat === 'Hardware Deliveries';
+  const waitColor = lighten(color);
+
+  for (let d = 0; d < numDays; d++) {{
+    const dt = addDays(calStart, d);
+    const td = document.createElement('td');
+    td.className = 'cal';
+
+    if (isWeekend(dt)) td.classList.add('we');
+
+    if (dt >= startDt && dt < endDt) {{
+      td.classList.add('bar');
+      const progress = daysBetween(startDt, dt) / item.days;
+      if (isDelivery && progress < 0.7) {{
+        td.style.background = waitColor;
+      }} else {{
+        td.style.background = color;
+      }}
+    }}
+
+    tr.appendChild(td);
+  }}
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Milestone & Today lines
+// ═══════════════════════════════════════════════════════════════════
+function drawLines() {{
+  const wrapper = document.getElementById('gantt-wrapper');
+  wrapper.querySelectorAll('.vline').forEach(el => el.remove());
+
+  const table = document.getElementById('gantt-table');
+  const rows = table.querySelectorAll('thead tr');
+  if (rows.length < 2) return;
+
+  const headerCells = rows[1].querySelectorAll('th');
+  const dataCols = 7; // task, person, start, days, effort, conf, hidden
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const tableH = table.offsetHeight;
+
+  function addLine(offset, color, title) {{
+    if (offset < 0 || offset >= numDays) return;
+    const idx = dataCols + offset;
+    if (idx >= headerCells.length) return;
+    const cell = headerCells[idx];
+    const cellRect = cell.getBoundingClientRect();
+    const line = document.createElement('div');
+    line.className = 'vline';
+    line.style.left = (cellRect.left - wrapperRect.left + wrapper.scrollLeft) + 'px';
+    line.style.height = tableH + 'px';
+    line.style.background = color;
+    line.title = title || '';
+    wrapper.appendChild(line);
+  }}
+
+  // Today
+  addLine(todayOffset, '#00B050', 'Today');
+
+  // Milestones
+  DATA.milestones.forEach(ms => {{
+    const msDate = parseDate(ms.date);
+    const offset = daysBetween(calStart, msDate);
+    addLine(offset, ms.color, ms.label + ' (' + ms.date + ')');
+  }});
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Legend & footer
+// ═══════════════════════════════════════════════════════════════════
+function renderLegend() {{
+  const legend = document.getElementById('legend');
+  legend.innerHTML = Object.entries(DATA.categories).map(([name, color]) =>
+    `<div class="legend-item"><div class="legend-swatch" style="background:${{color}}"></div>${{name}}</div>`
+  ).join('') +
+  `<div class="legend-item"><div class="legend-swatch" style="background:${{lighten(DATA.categories['Hardware Deliveries'])}}"></div>Delivery waiting</div>`;
+
+  document.getElementById('info').innerHTML =
+    '<strong>Effort:</strong> S = Small (&frac12;day) &middot; M = Medium (1-3d) &middot; L = Large (week+)<br>' +
+    '<strong>Confidence:</strong> H = High (on track) &middot; M = Medium (some risk) &middot; L = Low (significant risk)';
+
+  const ll = document.getElementById('lines-legend');
+  ll.innerHTML = '<span class="ll-swatch" style="background:#00B050"></span> Today &nbsp;&nbsp;' +
+    DATA.milestones.map(ms =>
+      `<span class="ll-swatch" style="background:${{ms.color}}"></span> ${{ms.label}} (${{ms.date}}) &nbsp;&nbsp;`
+    ).join('');
+
+  document.getElementById('footer').textContent =
+    'Click any cell to edit \u2022 Bars update instantly \u2022 Use Export JSON to save changes \u2022 ' +
+    'Last generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}';
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Export
+// ═══════════════════════════════════════════════════════════════════
+function exportJSON() {{
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {{type: 'application/json'}});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'gantt_data.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════════════════════════
+render();
+window.addEventListener('resize', drawLines);
+document.getElementById('gantt-wrapper').addEventListener('scroll', drawLines);
+</script>
+</body>
+</html>"""
+
+with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    f.write(html)
+
+print(f"Generated: {OUTPUT_FILE}")
+print(f"Tasks: {sum(len(g['items']) for g in data['tasks'])}")
+print(f"Features: inline editing, dropdowns, live bar updates, JSON export")
