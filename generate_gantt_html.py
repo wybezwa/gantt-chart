@@ -1,10 +1,15 @@
-"""Generate an interactive HTML Gantt chart from gantt_data.json.
+﻿"""Generate an interactive HTML Gantt chart from gantt_data.json.
 
 The output is a self-contained HTML file where:
 - All data cells are editable inline (click to edit)
 - Bars redraw instantly when Start or Days change
-- Export button downloads updated data as JSON
+- Multi-person assignment with checkbox dropdowns
+- Task dependency arrows (SVG overlay)
+- Per-person workload summary
+- Save to File (File System Access API) + Download JSON fallback
 - No external dependencies
+
+Also generates gantt.md — a markdown companion for colleagues.
 """
 import json
 import os
@@ -13,10 +18,59 @@ from datetime import datetime, timedelta
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(SCRIPT_DIR, "gantt_data.json")
 OUTPUT_FILE = os.path.join(SCRIPT_DIR, "index.html")
+MD_FILE = os.path.join(SCRIPT_DIR, "gantt.md")
 
 with open(DATA_FILE, "r", encoding="utf-8") as f:
     data = json.load(f)
 
+# ── Markdown companion generation ──────────────────────────────────
+def generate_markdown(data):
+    lines = []
+    lines.append(f"# {data['title']}")
+    lines.append("")
+    lines.append(f"> Auto-generated from `gantt_data.json` on {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    lines.append(f"> Calendar range: {data['calendar']['start']} to {data['calendar']['end']}")
+    lines.append("")
+    if data.get("milestones"):
+        lines.append("## Milestones")
+        lines.append("")
+        for ms in data["milestones"]:
+            lines.append(f"- **{ms['label']}** — {ms['date']}")
+        lines.append("")
+    for group in data["tasks"]:
+        cat = group["category"]
+        lines.append(f"## {cat}")
+        lines.append("")
+        lines.append("| ID | Task | Person(s) | Start | Days | Effort | Difficulty | Status | Depends On |")
+        lines.append("|:---|:-----|:----------|:------|-----:|:------:|:----------:|:------:|:-----------|")
+        for item in group["items"]:
+            tid = item.get("id", "")
+            task = item["task"]
+            person = item.get("person", [])
+            if isinstance(person, str):
+                person = [person]
+            persons = ", ".join(person)
+            start = item["start"]
+            days = item["days"]
+            effort = item.get("effort", "")
+            diff = item.get("difficulty", item.get("confidence", ""))
+            deps = item.get("depends_on", [])
+            deps_str = ", ".join(deps) if deps else "—"
+            status = item.get("status", "on-track")
+            status_display = {"on-track": "✅", "delayed": "⚠️", "done": "✔️", "not-needed": "➖"}.get(status, status)
+            lines.append(f"| {tid} | {task} | {persons} | {start} | {days} | {effort} | {diff} | {status_display} | {deps_str} |")
+        lines.append("")
+    lines.append("---")
+    lines.append("")
+    lines.append("*This file is auto-generated. Edit `gantt_data.json` and push to update.*")
+    lines.append("")
+    return "\n".join(lines)
+
+with open(MD_FILE, "w", encoding="utf-8") as f:
+    f.write(generate_markdown(data))
+print(f"Generated: {MD_FILE}")
+
+# ── HTML generation ────────────────────────────────────────────────
 # Embed the data as JSON in the HTML — JS handles all rendering
 data_json = json.dumps(data, indent=2, ensure_ascii=False)
 
@@ -70,17 +124,26 @@ html = f"""<!DOCTYPE html>
     transition: background 0.15s;
   }}
 
+  .btn-save {{
+    background: #00B050;
+    color: #fff;
+  }}
+  .btn-save:hover {{ background: #008a3e; }}
+
   .btn-export {{
     background: var(--header-bg);
     color: #fff;
   }}
   .btn-export:hover {{ background: #1e3a6e; }}
 
-  .btn-add {{
-    background: #00B050;
-    color: #fff;
+  .save-status {{
+    font-size: 12px;
+    font-weight: 600;
+    color: #00B050;
+    opacity: 0;
+    transition: opacity 0.3s;
+    margin-left: 8px;
   }}
-  .btn-add:hover {{ background: #008a3e; }}
 
   .gantt-wrapper {{
     overflow-x: auto;
@@ -96,9 +159,9 @@ html = f"""<!DOCTYPE html>
     white-space: nowrap;
   }}
 
-  /* Month header */
   .month-header {{
     background: #D6E4F0;
+    color: #2F5496;
     font-size: 12px;
     font-weight: 600;
     text-align: center;
@@ -106,7 +169,6 @@ html = f"""<!DOCTYPE html>
     border-bottom: 1px solid var(--border);
   }}
 
-  /* Column headers */
   th {{
     background: var(--header-bg);
     color: var(--header-text);
@@ -130,31 +192,48 @@ html = f"""<!DOCTYPE html>
 
   th.day-h.we {{ background: #1e3a6e; }}
 
-  /* Data cells */
   td {{
     border-bottom: 1px solid #f0f0f0;
     padding: 3px 6px;
     height: var(--cell-h);
   }}
 
+  td.task-id {{
+    min-width: 36px;
+    max-width: 50px;
+    text-align: center;
+    font-size: 10px;
+    color: #888;
+    font-family: monospace;
+  }}
+
   td.task-name {{
-    min-width: 280px;
-    max-width: 350px;
+    min-width: 260px;
+    max-width: 340px;
     font-size: 12px;
     padding-left: 12px;
   }}
 
-  td.person {{ min-width: 70px; text-align: center; font-size: 11px; color: #555; }}
+  td.person {{ min-width: 90px; text-align: center; font-size: 11px; color: #555; position: relative; }}
   td.date {{ min-width: 90px; text-align: center; font-size: 11px; font-family: monospace; }}
   td.days {{ min-width: 35px; text-align: center; font-size: 11px; }}
   td.effort {{ min-width: 40px; text-align: center; font-size: 11px; }}
-  td.conf {{ min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }}
+  td.diff {{ min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }}
+  td.deps {{ min-width: 80px; text-align: center; font-size: 10px; color: #555; position: relative; }}
 
-  td.conf-h {{ background: #C6EFCE; color: #1a6b1a; }}
-  td.conf-m {{ background: #FFEB9C; color: #7a6100; }}
-  td.conf-l {{ background: #FFC7CE; color: #8b1a1a; }}
+  td.status {{ min-width: 75px; text-align: center; font-size: 11px; font-weight: 600; }}
+  td.status-on-track {{ background: #C6EFCE; color: #1a6b1a; }}
+  td.status-delayed {{ background: #FFC7CE; color: #8b1a1a; }}
+  td.status-done {{ background: #D9E2F3; color: #2F5496; }}
+  td.status-not-needed {{ background: #F0F0F0; color: #999; }}
 
-  /* Editable cells */
+  /* Status bar effects */
+  tr.task-delayed td.cal.bar {{ opacity: 0.5; }}
+  tr.task-not-needed td.cal.bar {{ opacity: 0.2; }}
+  tr.task-done td.cal.bar {{ opacity: 0.6; }}
+  tr.task-not-needed td.task-name {{ text-decoration: line-through; color: #999; }}
+  tr.task-done td.task-name {{ color: #2F5496; }}
+
   td[contenteditable="true"] {{
     cursor: text;
     outline: none;
@@ -168,7 +247,6 @@ html = f"""<!DOCTYPE html>
     box-shadow: inset 0 0 0 2px #4285f4;
   }}
 
-  /* Select dropdowns embedded in cells */
   td select {{
     border: none;
     background: transparent;
@@ -184,7 +262,6 @@ html = f"""<!DOCTYPE html>
   td select:hover {{ background: #e8f0fe; }}
   td select:focus {{ background: #d2e3fc; box-shadow: inset 0 0 0 2px #4285f4; }}
 
-  /* Calendar cells */
   td.cal {{
     min-width: var(--cal-w);
     max-width: var(--cal-w);
@@ -194,9 +271,7 @@ html = f"""<!DOCTYPE html>
   }}
 
   td.cal.we {{ background: var(--weekend-bg); }}
-  td.cal.bar {{ /* color set by JS */ }}
 
-  /* Category header rows */
   tr.cat-row td {{
     background: #f8f9fa;
     padding: 6px;
@@ -214,7 +289,6 @@ html = f"""<!DOCTYPE html>
     margin-right: 6px;
   }}
 
-  /* Milestone and today lines */
   .vline {{
     position: absolute;
     top: 0;
@@ -223,7 +297,109 @@ html = f"""<!DOCTYPE html>
     z-index: 5;
   }}
 
-  /* Legend */
+  /* Multi-select dropdown */
+  .ms-dropdown {{
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    z-index: 20;
+    min-width: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }}
+  .ms-dropdown.open {{ display: block; }}
+  .ms-dropdown label {{
+    display: block;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+  }}
+  .ms-dropdown label:hover {{ background: #e8f0fe; }}
+  .ms-dropdown input[type="checkbox"] {{ margin-right: 6px; vertical-align: middle; }}
+
+  .ms-trigger {{
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    min-height: 20px;
+    display: inline-block;
+    width: 100%;
+  }}
+  .ms-trigger:hover {{ background: #e8f0fe; }}
+
+  /* SVG dependency overlay */
+  #dep-svg {{
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 4;
+  }}
+
+  /* Workload section */
+  .workload-section {{
+    margin-top: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }}
+
+  .workload-section h2 {{
+    font-size: 16px;
+    color: var(--header-bg);
+    margin-bottom: 12px;
+  }}
+
+  .wl-row {{
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    gap: 8px;
+  }}
+
+  .wl-name {{
+    width: 80px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: right;
+  }}
+
+  .wl-bar-bg {{
+    flex: 1;
+    height: 22px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }}
+
+  .wl-bar {{
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    min-width: 20px;
+  }}
+
+  .wl-stats {{
+    font-size: 11px;
+    color: #666;
+    width: 140px;
+  }}
+
   .legend {{
     margin-top: 20px;
     display: flex;
@@ -250,33 +426,22 @@ html = f"""<!DOCTYPE html>
   .footer {{
     margin-top: 16px; font-size: 11px; color: #999; font-style: italic;
   }}
-
-  /* Delete button in rows */
-  .del-btn {{
-    opacity: 0;
-    cursor: pointer;
-    color: #cc0000;
-    font-size: 14px;
-    transition: opacity 0.15s;
-    border: none;
-    background: none;
-    padding: 0 4px;
-  }}
-  tr:hover .del-btn {{ opacity: 0.6; }}
-  .del-btn:hover {{ opacity: 1 !important; }}
 </style>
 </head>
 <body>
 
 <div class="top-bar">
   <h1 id="chart-title"></h1>
-  <div>
-    <button class="btn btn-export" onclick="exportJSON()" title="Download current data as JSON">&#x2B07; Export JSON</button>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-save" onclick="saveToFile()" title="Save data to a file on disk">&#x1F4BE; Save to File</button>
+    <button class="btn btn-export" onclick="downloadJSON()" title="Download current data as JSON">&#x2B07; Download JSON</button>
     <button class="btn" style="background:#888;color:#fff" onclick="resetLocal()" title="Discard browser edits and reload original data">&#x21BA; Reset</button>
+    <span class="save-status" id="save-status"></span>
   </div>
 </div>
 
 <div class="gantt-wrapper" id="gantt-wrapper">
+  <svg id="dep-svg"></svg>
   <table id="gantt-table">
     <thead id="gantt-head"></thead>
     <tbody id="gantt-body"></tbody>
@@ -286,6 +451,12 @@ html = f"""<!DOCTYPE html>
 <div class="legend" id="legend"></div>
 <div class="info" id="info"></div>
 <div class="lines-legend" id="lines-legend"></div>
+
+<div class="workload-section" id="workload-section">
+  <h2>Workload Summary</h2>
+  <div id="workload-bars"></div>
+</div>
+
 <div class="footer" id="footer"></div>
 
 <script>
@@ -293,6 +464,9 @@ html = f"""<!DOCTYPE html>
 // Gantt data (embedded from JSON)
 // ═══════════════════════════════════════════════════════════════════
 const DATA = {data_json};
+
+// Number of fixed columns before calendar: ID, Task, Person, Start, Days, Effort, Diff, Deps, Status
+const DATA_COLS = 9;
 
 // ═══════════════════════════════════════════════════════════════════
 // Helpers
@@ -309,6 +483,7 @@ function daysBetween(a, b) {{ return Math.round((b - a) / 86400000); }}
 function isWeekend(d) {{ return d.getDay() === 0 || d.getDay() === 6; }}
 
 function lighten(hex) {{
+  if (!hex) return '#ddd';
   const h = hex.replace('#','');
   let r = parseInt(h.substring(0,2),16);
   let g = parseInt(h.substring(2,4),16);
@@ -317,6 +492,27 @@ function lighten(hex) {{
   g = Math.min(255, g + Math.floor((255-g)/2));
   b = Math.min(255, b + Math.floor((255-b)/2));
   return `#${{r.toString(16).padStart(2,'0')}}${{g.toString(16).padStart(2,'0')}}${{b.toString(16).padStart(2,'0')}}`;
+}}
+
+// Normalize person field — always return array
+function getPersonArray(item) {{
+  if (!item.person) return [];
+  if (Array.isArray(item.person)) return item.person;
+  return [item.person];
+}}
+
+// Build a flat task lookup by ID
+function buildTaskMap() {{
+  const m = {{}};
+  DATA.tasks.forEach(g => g.items.forEach(it => {{ if (it.id) m[it.id] = it; }}));
+  return m;
+}}
+
+// Get all task IDs in order
+function allTaskIds() {{
+  const ids = [];
+  DATA.tasks.forEach(g => g.items.forEach(it => {{ if (it.id) ids.push(it.id); }}));
+  return ids;
 }}
 
 // ═══════════════════════════════════════════════════════════════════
@@ -329,6 +525,11 @@ const today = new Date(); today.setHours(0,0,0,0);
 const todayOffset = daysBetween(calStart, today);
 
 // ═══════════════════════════════════════════════════════════════════
+// Row-to-item mapping for dependency arrows
+// ═══════════════════════════════════════════════════════════════════
+const rowMap = new Map(); // id -> tr element
+
+// ═══════════════════════════════════════════════════════════════════
 // Render
 // ═══════════════════════════════════════════════════════════════════
 function render() {{
@@ -336,7 +537,9 @@ function render() {{
   renderHead();
   renderBody();
   renderLegend();
+  renderWorkload();
   drawLines();
+  drawDependencies();
 }}
 
 function renderHead() {{
@@ -346,7 +549,7 @@ function renderHead() {{
   // Month row
   const mrow = document.createElement('tr');
   const mblank = document.createElement('th');
-  mblank.colSpan = 7; mblank.className = 'month-header';
+  mblank.colSpan = DATA_COLS; mblank.className = 'month-header';
   mrow.appendChild(mblank);
 
   let curMonth = null, curTh = null;
@@ -368,10 +571,9 @@ function renderHead() {{
 
   // Column headers
   const hrow = document.createElement('tr');
-  ['Task', 'Person', 'Start', 'Days', 'Effort', 'Conf.', ''].forEach((h, i) => {{
+  ['ID', 'Task', 'Person(s)', 'Start', 'Days', 'Effort', 'Diff.', 'Deps', 'Status'].forEach(h => {{
     const th = document.createElement('th');
     th.textContent = h;
-    if (i === 6) th.style.display = 'none'; // hidden actions col
     hrow.appendChild(th);
   }});
 
@@ -389,8 +591,9 @@ function renderHead() {{
 function renderBody() {{
   const tbody = document.getElementById('gantt-body');
   tbody.innerHTML = '';
+  rowMap.clear();
 
-  DATA.tasks.forEach((group, gi) => {{
+  DATA.tasks.forEach((group) => {{
     const cat = group.category;
     const color = DATA.categories[cat];
 
@@ -398,16 +601,22 @@ function renderBody() {{
     const crow = document.createElement('tr');
     crow.className = 'cat-row';
     const clabel = document.createElement('td');
-    clabel.colSpan = 7 + numDays;
-    clabel.innerHTML = `<span class="cat-swatch" style="background:${{color}}"></span>${{cat}}`;
+    clabel.colSpan = DATA_COLS + numDays;
+    clabel.innerHTML = `<span class="cat-swatch" style="background:${{color || '#ccc'}}"></span>${{cat}}`;
     crow.appendChild(clabel);
     tbody.appendChild(crow);
 
     // Task rows
-    group.items.forEach((item, ti) => {{
+    group.items.forEach((item) => {{
       const tr = document.createElement('tr');
 
-      // Task name (editable)
+      // 1. ID (read-only)
+      const tdId = document.createElement('td');
+      tdId.className = 'task-id';
+      tdId.textContent = item.id || '';
+      tr.appendChild(tdId);
+
+      // 2. Task name (editable)
       const tdTask = document.createElement('td');
       tdTask.className = 'task-name';
       tdTask.contentEditable = 'true';
@@ -415,17 +624,17 @@ function renderBody() {{
       tdTask.addEventListener('blur', () => {{ item.task = tdTask.textContent.trim(); saveLocal(); }});
       tr.appendChild(tdTask);
 
-      // Person (dropdown)
+      // 3. Person (multi-select)
       const tdPerson = document.createElement('td');
       tdPerson.className = 'person';
-      const selPerson = document.createElement('select');
-      selPerson.innerHTML = '<option value="">—</option>' +
-        DATA.people.map(p => `<option value="${{p}}" ${{p===item.person?'selected':''}}>${{p}}</option>`).join('');
-      selPerson.addEventListener('change', () => {{ item.person = selPerson.value; saveLocal(); }});
-      tdPerson.appendChild(selPerson);
+      buildMultiSelect(tdPerson, DATA.people, getPersonArray(item), (sel) => {{
+        item.person = sel;
+        saveLocal();
+        renderWorkload();
+      }});
       tr.appendChild(tdPerson);
 
-      // Start date (editable)
+      // 4. Start date (editable)
       const tdStart = document.createElement('td');
       tdStart.className = 'date';
       tdStart.contentEditable = 'true';
@@ -436,13 +645,14 @@ function renderBody() {{
           item.start = val;
           renderCalRow(tr, item, cat, color);
           saveLocal();
+          drawDependencies();
         }} else {{
           tdStart.textContent = item.start;
         }}
       }});
       tr.appendChild(tdStart);
 
-      // Days (editable)
+      // 5. Days (editable)
       const tdDays = document.createElement('td');
       tdDays.className = 'days';
       tdDays.contentEditable = 'true';
@@ -453,13 +663,15 @@ function renderBody() {{
           item.days = val;
           renderCalRow(tr, item, cat, color);
           saveLocal();
+          renderWorkload();
+          drawDependencies();
         }} else {{
           tdDays.textContent = item.days;
         }}
       }});
       tr.appendChild(tdDays);
 
-      // Effort (dropdown)
+      // 6. Effort (dropdown)
       const tdEffort = document.createElement('td');
       tdEffort.className = 'effort';
       const selEffort = document.createElement('select');
@@ -470,40 +682,127 @@ function renderBody() {{
       tdEffort.appendChild(selEffort);
       tr.appendChild(tdEffort);
 
-      // Confidence (dropdown)
-      const tdConf = document.createElement('td');
-      const selConf = document.createElement('select');
-      selConf.innerHTML = ['H','M','L'].map(v =>
-        `<option value="${{v}}" ${{v===item.confidence?'selected':''}}>${{v}}</option>`
+      // 7. Difficulty (dropdown with flipped colors: H=red, L=green)
+      const tdDiff = document.createElement('td');
+      const selDiff = document.createElement('select');
+      selDiff.innerHTML = ['H','M','L'].map(v =>
+        `<option value="${{v}}" ${{v===(item.difficulty||item.confidence)?'selected':''}}>${{v}}</option>`
       ).join('');
-      const confColors = {{ H: ['#C6EFCE','#1a6b1a'], M: ['#FFEB9C','#7a6100'], L: ['#FFC7CE','#8b1a1a'] }};
-      function updateConfStyle() {{
-        const c = confColors[selConf.value] || ['transparent','#333'];
-        tdConf.style.background = c[0];
-        tdConf.style.color = c[1];
-        tdConf.className = 'conf';
+      const diffColors = {{ H: ['#FFC7CE','#8b1a1a'], M: ['#FFEB9C','#7a6100'], L: ['#C6EFCE','#1a6b1a'] }};
+      function updateDiffStyle() {{
+        const c = diffColors[selDiff.value] || ['transparent','#333'];
+        tdDiff.style.background = c[0];
+        tdDiff.style.color = c[1];
+        tdDiff.className = 'diff';
       }}
-      selConf.addEventListener('change', () => {{ item.confidence = selConf.value; updateConfStyle(); saveLocal(); }});
-      tdConf.appendChild(selConf);
-      tr.appendChild(tdConf);
-      updateConfStyle();
+      selDiff.addEventListener('change', () => {{
+        item.difficulty = selDiff.value;
+        updateDiffStyle();
+        saveLocal();
+        renderWorkload();
+      }});
+      tdDiff.appendChild(selDiff);
+      tr.appendChild(tdDiff);
+      updateDiffStyle();
 
-      // Hidden delete button column
-      const tdDel = document.createElement('td');
-      tdDel.style.display = 'none';
-      tr.appendChild(tdDel);
+      // 8. Dependencies (multi-select of task IDs)
+      const tdDeps = document.createElement('td');
+      tdDeps.className = 'deps';
+      const otherIds = allTaskIds().filter(id => id !== item.id);
+      buildMultiSelect(tdDeps, otherIds, item.depends_on || [], (sel) => {{
+        item.depends_on = sel;
+        saveLocal();
+        drawDependencies();
+      }});
+      tr.appendChild(tdDeps);
+
+      // 9. Status (dropdown)
+      const tdStatus = document.createElement('td');
+      const selStatus = document.createElement('select');
+      const statusOpts = [
+        ['on-track', 'On Track'],
+        ['delayed', 'Delayed'],
+        ['done', 'Done'],
+        ['not-needed', 'Not Needed']
+      ];
+      selStatus.innerHTML = statusOpts.map(([v, label]) =>
+        `<option value="${{v}}" ${{v===(item.status||'on-track')?'selected':''}}>${{label}}</option>`
+      ).join('');
+      function updateStatusStyle() {{
+        tdStatus.className = 'status status-' + (selStatus.value || 'on-track');
+        tr.className = tr.className.replace(/task-\S+/g, '').trim();
+        if (selStatus.value !== 'on-track') tr.classList.add('task-' + selStatus.value);
+      }}
+      selStatus.addEventListener('change', () => {{
+        item.status = selStatus.value;
+        updateStatusStyle();
+        saveLocal();
+      }});
+      tdStatus.appendChild(selStatus);
+      tr.appendChild(tdStatus);
+      updateStatusStyle();
 
       // Calendar cells
       renderCalRow(tr, item, cat, color);
 
       tbody.appendChild(tr);
+      if (item.id) rowMap.set(item.id, tr);
     }});
   }});
 }}
 
+// ═══════════════════════════════════════════════════════════════════
+// Multi-select dropdown builder
+// ═══════════════════════════════════════════════════════════════════
+function buildMultiSelect(td, options, selected, onChange) {{
+  const trigger = document.createElement('span');
+  trigger.className = 'ms-trigger';
+  trigger.textContent = selected.length ? selected.join(', ') : '—';
+  td.appendChild(trigger);
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'ms-dropdown';
+
+  options.forEach(opt => {{
+    const label = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = opt;
+    cb.checked = selected.includes(opt);
+    cb.addEventListener('change', () => {{
+      const sel = [];
+      dropdown.querySelectorAll('input[type=checkbox]:checked').forEach(c => sel.push(c.value));
+      trigger.textContent = sel.length ? sel.join(', ') : '—';
+      onChange(sel);
+    }});
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(opt));
+    dropdown.appendChild(label);
+  }});
+
+  td.appendChild(dropdown);
+
+  trigger.addEventListener('click', (e) => {{
+    e.stopPropagation();
+    // Close all other open dropdowns
+    document.querySelectorAll('.ms-dropdown.open').forEach(d => {{ if (d !== dropdown) d.classList.remove('open'); }});
+    dropdown.classList.toggle('open');
+  }});
+
+  // Prevent clicks inside dropdown from closing it
+  dropdown.addEventListener('click', (e) => e.stopPropagation());
+}}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', () => {{
+  document.querySelectorAll('.ms-dropdown.open').forEach(d => d.classList.remove('open'));
+}});
+
+// ═══════════════════════════════════════════════════════════════════
+// Calendar bar rendering
+// ═══════════════════════════════════════════════════════════════════
 function renderCalRow(tr, item, cat, color) {{
-  // Remove existing calendar cells
-  while (tr.children.length > 7) tr.removeChild(tr.lastChild);
+  while (tr.children.length > DATA_COLS) tr.removeChild(tr.lastChild);
 
   const startDt = parseDate(item.start);
   const endDt = addDays(startDt, item.days);
@@ -514,9 +813,7 @@ function renderCalRow(tr, item, cat, color) {{
     const dt = addDays(calStart, d);
     const td = document.createElement('td');
     td.className = 'cal';
-
     if (isWeekend(dt)) td.classList.add('we');
-
     if (dt >= startDt && dt < endDt) {{
       td.classList.add('bar');
       const progress = daysBetween(startDt, dt) / item.days;
@@ -526,9 +823,102 @@ function renderCalRow(tr, item, cat, color) {{
         td.style.background = color;
       }}
     }}
-
     tr.appendChild(td);
   }}
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Dependency arrows (SVG overlay)
+// ═══════════════════════════════════════════════════════════════════
+function drawDependencies() {{
+  const svg = document.getElementById('dep-svg');
+  const wrapper = document.getElementById('gantt-wrapper');
+  const table = document.getElementById('gantt-table');
+
+  svg.innerHTML = '';
+  svg.setAttribute('width', table.offsetWidth);
+  svg.setAttribute('height', table.offsetHeight);
+
+  // Arrowhead marker
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', 'arrowhead');
+  marker.setAttribute('markerWidth', '8');
+  marker.setAttribute('markerHeight', '6');
+  marker.setAttribute('refX', '8');
+  marker.setAttribute('refY', '3');
+  marker.setAttribute('orient', 'auto');
+  const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  poly.setAttribute('points', '0 0, 8 3, 0 6');
+  poly.setAttribute('fill', '#666');
+  marker.appendChild(poly);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  const thead = table.querySelector('thead');
+  const headerCells = thead.querySelectorAll('tr:last-child th');
+  const wrapperRect = wrapper.getBoundingClientRect();
+
+  const taskMap = buildTaskMap();
+
+  DATA.tasks.forEach(group => {{
+    group.items.forEach(item => {{
+      if (!item.depends_on || !item.depends_on.length || !item.id) return;
+      const succTr = rowMap.get(item.id);
+      if (!succTr) return;
+
+      item.depends_on.forEach(depId => {{
+        const predItem = taskMap[depId];
+        const predTr = rowMap.get(depId);
+        if (!predItem || !predTr) return;
+
+        // Find bar positions
+        const predEnd = getBarEndX(predItem, headerCells, wrapperRect, wrapper);
+        const succStart = getBarStartX(item, headerCells, wrapperRect, wrapper);
+        const predY = getRowMidY(predTr, wrapperRect, wrapper);
+        const succY = getRowMidY(succTr, wrapperRect, wrapper);
+
+        if (predEnd === null || succStart === null) return;
+
+        // Draw right-angle connector
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const midX = (predEnd + succStart) / 2;
+        const d = `M ${{predEnd}} ${{predY}} L ${{midX}} ${{predY}} L ${{midX}} ${{succY}} L ${{succStart}} ${{succY}}`;
+        path.setAttribute('d', d);
+        path.setAttribute('stroke', '#666');
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('marker-end', 'url(#arrowhead)');
+        path.setAttribute('opacity', '0.7');
+        svg.appendChild(path);
+      }});
+    }});
+  }});
+}}
+
+function getBarEndX(item, headerCells, wrapperRect, wrapper) {{
+  const startDt = parseDate(item.start);
+  const endOffset = daysBetween(calStart, addDays(startDt, item.days)) - 1;
+  const idx = DATA_COLS + endOffset;
+  if (idx < 0 || idx >= headerCells.length) return null;
+  const cell = headerCells[idx];
+  const rect = cell.getBoundingClientRect();
+  return rect.right - wrapperRect.left + wrapper.scrollLeft;
+}}
+
+function getBarStartX(item, headerCells, wrapperRect, wrapper) {{
+  const startDt = parseDate(item.start);
+  const startOffset = daysBetween(calStart, startDt);
+  const idx = DATA_COLS + startOffset;
+  if (idx < 0 || idx >= headerCells.length) return null;
+  const cell = headerCells[idx];
+  const rect = cell.getBoundingClientRect();
+  return rect.left - wrapperRect.left + wrapper.scrollLeft;
+}}
+
+function getRowMidY(tr, wrapperRect, wrapper) {{
+  const rect = tr.getBoundingClientRect();
+  return rect.top + rect.height / 2 - wrapperRect.top + wrapper.scrollTop;
 }}
 
 // ═══════════════════════════════════════════════════════════════════
@@ -543,13 +933,12 @@ function drawLines() {{
   if (rows.length < 2) return;
 
   const headerCells = rows[1].querySelectorAll('th');
-  const dataCols = 7; // task, person, start, days, effort, conf, hidden
   const wrapperRect = wrapper.getBoundingClientRect();
   const tableH = table.offsetHeight;
 
   function addLine(offset, color, title) {{
     if (offset < 0 || offset >= numDays) return;
-    const idx = dataCols + offset;
+    const idx = DATA_COLS + offset;
     if (idx >= headerCells.length) return;
     const cell = headerCells[idx];
     const cellRect = cell.getBoundingClientRect();
@@ -574,18 +963,90 @@ function drawLines() {{
 }}
 
 // ═══════════════════════════════════════════════════════════════════
+// Workload Summary
+// ═══════════════════════════════════════════════════════════════════
+function renderWorkload() {{
+  const container = document.getElementById('workload-bars');
+  container.innerHTML = '';
+
+  const diffWeight = {{ H: 3, M: 2, L: 1 }};
+  const stats = {{}};
+
+  DATA.people.forEach(p => {{ stats[p] = {{ score: 0, tasks: 0, days: 0 }}; }});
+
+  DATA.tasks.forEach(group => {{
+    group.items.forEach(item => {{
+      const persons = getPersonArray(item);
+      if (!persons.length) return;
+      const d = item.difficulty || item.confidence || 'M';
+      const w = diffWeight[d] || 2;
+      const share = persons.length;
+      persons.forEach(p => {{
+        if (!stats[p]) stats[p] = {{ score: 0, tasks: 0, days: 0 }};
+        stats[p].score += (item.days * w) / share;
+        stats[p].tasks += 1 / share;
+        stats[p].days += item.days / share;
+      }});
+    }});
+  }});
+
+  const maxScore = Math.max(...Object.values(stats).map(s => s.score), 1);
+
+  // Sort by score descending
+  const sorted = Object.entries(stats).sort((a, b) => b[1].score - a[1].score);
+
+  sorted.forEach(([name, s]) => {{
+    if (s.score === 0) return;
+    const row = document.createElement('div');
+    row.className = 'wl-row';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'wl-name';
+    nameEl.textContent = name;
+    row.appendChild(nameEl);
+
+    const barBg = document.createElement('div');
+    barBg.className = 'wl-bar-bg';
+    const bar = document.createElement('div');
+    bar.className = 'wl-bar';
+    const pct = (s.score / maxScore) * 100;
+    bar.style.width = pct + '%';
+
+    // Color gradient: green (low load) → yellow → red (high load)
+    const ratio = s.score / maxScore;
+    if (ratio < 0.5) {{
+      bar.style.background = `rgb(${{Math.round(ratio * 2 * 255)}}, 180, 80)`;
+    }} else {{
+      bar.style.background = `rgb(255, ${{Math.round((1 - ratio) * 2 * 180)}}, 80)`;
+    }}
+
+    bar.textContent = Math.round(s.score);
+    barBg.appendChild(bar);
+    row.appendChild(barBg);
+
+    const statsEl = document.createElement('div');
+    statsEl.className = 'wl-stats';
+    statsEl.textContent = `${{Math.round(s.tasks)}} tasks, ${{Math.round(s.days)}} days`;
+    row.appendChild(statsEl);
+
+    container.appendChild(row);
+  }});
+}}
+
+// ═══════════════════════════════════════════════════════════════════
 // Legend & footer
 // ═══════════════════════════════════════════════════════════════════
 function renderLegend() {{
   const legend = document.getElementById('legend');
+  const deliveryColor = DATA.categories['Hardware Deliveries'];
   legend.innerHTML = Object.entries(DATA.categories).map(([name, color]) =>
     `<div class="legend-item"><div class="legend-swatch" style="background:${{color}}"></div>${{name}}</div>`
   ).join('') +
-  `<div class="legend-item"><div class="legend-swatch" style="background:${{lighten(DATA.categories['Hardware Deliveries'])}}"></div>Delivery waiting</div>`;
+  (deliveryColor ? `<div class="legend-item"><div class="legend-swatch" style="background:${{lighten(deliveryColor)}}"></div>Delivery waiting</div>` : '');
 
   document.getElementById('info').innerHTML =
     '<strong>Effort:</strong> S = Small (&frac12;day) &middot; M = Medium (1-3d) &middot; L = Large (week+)<br>' +
-    '<strong>Confidence:</strong> H = High (on track) &middot; M = Medium (some risk) &middot; L = Low (significant risk)';
+    '<strong>Difficulty:</strong> H = High (hard, red) &middot; M = Medium &middot; L = Low (easy, green)';
 
   const ll = document.getElementById('lines-legend');
   ll.innerHTML = '<span class="ll-swatch" style="background:#00B050"></span> Today &nbsp;&nbsp;' +
@@ -594,15 +1055,15 @@ function renderLegend() {{
     ).join('');
 
   document.getElementById('footer').textContent =
-    'Click any cell to edit \u2022 Bars update instantly \u2022 Changes auto-saved in browser \u2022 Use Export JSON to commit changes \u2022 ' +
+    'Click any cell to edit \u2022 Bars update instantly \u2022 Changes auto-saved in browser \u2022 Use Save to File to write to disk \u2022 ' +
     'Last generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}' +
-    (localStorage.getItem(STORAGE_KEY) ? ' \u2022 \u26A0 You have unsaved browser edits (use Export or Reset)' : '');
+    (localStorage.getItem(STORAGE_KEY) ? ' \u2022 \u26A0 You have unsaved browser edits (use Save or Reset)' : '');
 }}
 
 // ═══════════════════════════════════════════════════════════════════
 // Persistence (localStorage)
 // ═══════════════════════════════════════════════════════════════════
-const STORAGE_KEY = 'gantt_data_v1';
+const STORAGE_KEY = 'gantt_data_v2';
 
 function saveLocal() {{
   localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
@@ -613,7 +1074,6 @@ function loadLocal() {{
   if (!saved) return;
   try {{
     const parsed = JSON.parse(saved);
-    // Merge saved task data into DATA
     if (parsed.tasks) DATA.tasks = parsed.tasks;
     if (parsed.title) DATA.title = parsed.title;
     if (parsed.milestones) DATA.milestones = parsed.milestones;
@@ -627,9 +1087,40 @@ function resetLocal() {{
 }}
 
 // ═══════════════════════════════════════════════════════════════════
-// Export
+// Save to File (File System Access API + download fallback)
 // ═══════════════════════════════════════════════════════════════════
-function exportJSON() {{
+let fileHandle = null;
+
+async function saveToFile() {{
+  const jsonStr = JSON.stringify(DATA, null, 2);
+  const statusEl = document.getElementById('save-status');
+
+  if ('showSaveFilePicker' in window) {{
+    try {{
+      if (!fileHandle) {{
+        fileHandle = await window.showSaveFilePicker({{
+          suggestedName: 'gantt_data.json',
+          types: [{{ description: 'JSON', accept: {{ 'application/json': ['.json'] }} }}]
+        }});
+      }}
+      const writable = await fileHandle.createWritable();
+      await writable.write(jsonStr);
+      await writable.close();
+      showSaveStatus('Saved \u2713');
+    }} catch (err) {{
+      if (err.name !== 'AbortError') {{
+        console.error('Save failed:', err);
+        showSaveStatus('Save failed');
+      }}
+    }}
+  }} else {{
+    // Fallback: download
+    downloadJSON();
+    showSaveStatus('Downloaded \u2713');
+  }}
+}}
+
+function downloadJSON() {{
   const blob = new Blob([JSON.stringify(DATA, null, 2)], {{type: 'application/json'}});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -638,13 +1129,20 @@ function exportJSON() {{
   URL.revokeObjectURL(a.href);
 }}
 
+function showSaveStatus(msg) {{
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  setTimeout(() => {{ el.style.opacity = '0'; }}, 2000);
+}}
+
 // ═══════════════════════════════════════════════════════════════════
 // Init
 // ═══════════════════════════════════════════════════════════════════
 loadLocal();
 render();
-window.addEventListener('resize', drawLines);
-document.getElementById('gantt-wrapper').addEventListener('scroll', drawLines);
+window.addEventListener('resize', () => {{ drawLines(); drawDependencies(); }});
+document.getElementById('gantt-wrapper').addEventListener('scroll', () => {{ drawLines(); drawDependencies(); }});
 </script>
 </body>
 </html>"""
@@ -654,4 +1152,4 @@ with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
 
 print(f"Generated: {OUTPUT_FILE}")
 print(f"Tasks: {sum(len(g['items']) for g in data['tasks'])}")
-print(f"Features: inline editing, dropdowns, live bar updates, JSON export")
+print(f"Features: inline editing, multi-person dropdowns, dependency arrows, workload summary, save to file")

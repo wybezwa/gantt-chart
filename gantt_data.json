@@ -5,9 +5,20 @@
     "end": "2026-05-31"
   },
   "milestones": [
-    {"date": "2026-04-19", "label": "Go/No-Go Gate", "color": "#FF0000"}
+    {
+      "date": "2026-04-19",
+      "label": "Go/No-Go Gate",
+      "color": "#FF0000"
+    }
   ],
-  "people": ["Camilo", "Ernst", "Nathan", "Sander", "Thijs", "Wybe"],
+  "people": [
+    "Camilo",
+    "Ernst",
+    "Nathan",
+    "Sander",
+    "Thijs",
+    "Wybe"
+  ],
   "categories": {
     "Design & Planning": "#B4C6E7",
     "Hardware Deliveries": "#FF6B6B",
@@ -19,58 +30,442 @@
     {
       "category": "Design & Planning",
       "items": [
-        {"task": "Confirmed controller path (decision)", "person": "Sander", "start": "2026-04-06", "days": 5, "effort": "M", "confidence": "H"},
-        {"task": "Initial controller architecture", "person": "Sander", "start": "2026-04-13", "days": 5, "effort": "L", "confidence": "M"},
-        {"task": "Spark basic system design", "person": "Sander", "start": "2026-04-20", "days": 5, "effort": "L", "confidence": "M"},
-        {"task": "Spark mechanical design decisions", "person": "Sander", "start": "2026-04-20", "days": 5, "effort": "M", "confidence": "H"},
-        {"task": "Spark critical parts finalised", "person": "Sander", "start": "2026-04-27", "days": 5, "effort": "M", "confidence": "M"},
-        {"task": "EWS dashboard requirements defined", "person": "Sander", "start": "2026-04-27", "days": 5, "effort": "S", "confidence": "H"},
-        {"task": "Total system validation planning", "person": "Sander", "start": "2026-05-11", "days": 5, "effort": "M", "confidence": "H"}
+        {
+          "id": "T1",
+          "task": "Confirmed controller path (decision)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-06",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T2",
+          "task": "Initial controller architecture",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-13",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T3",
+          "task": "Spark basic system design",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-20",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T4",
+          "task": "Spark mechanical design decisions",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-20",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T5",
+          "task": "Spark critical parts finalised",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-27",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T6",
+          "task": "EWS dashboard requirements defined",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-27",
+          "days": 5,
+          "effort": "S",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T7",
+          "task": "Total system validation planning",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-11",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        }
       ]
     },
     {
       "category": "Hardware Deliveries",
       "items": [
-        {"task": "MBD board (ordered → delivered)", "person": "Sander", "start": "2026-03-25", "days": 10, "effort": "S", "confidence": "H"},
-        {"task": "MB board (ordered → delivered)", "person": "Sander", "start": "2026-03-28", "days": 14, "effort": "S", "confidence": "M"},
-        {"task": "EEC board (ordered → delivered)", "person": "Sander", "start": "2026-04-13", "days": 15, "effort": "S", "confidence": "M"},
-        {"task": "Spark parts (ordered → delivered)", "person": "Sander", "start": "2026-04-29", "days": 17, "effort": "S", "confidence": "M"}
+        {
+          "id": "T8",
+          "task": "MBD board (ordered → delivered)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-03-25",
+          "days": 10,
+          "effort": "S",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T9",
+          "task": "MB board (ordered → delivered)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-03-28",
+          "days": 14,
+          "effort": "S",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T10",
+          "task": "EEC board (ordered → delivered)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-13",
+          "days": 15,
+          "effort": "S",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T11",
+          "task": "Spark parts (ordered → delivered)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-29",
+          "days": 17,
+          "effort": "S",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        }
       ]
     },
     {
       "category": "Firmware & Software",
       "items": [
-        {"task": "BB improvement list & quick studies", "person": "Sander", "start": "2026-04-06", "days": 5, "effort": "M", "confidence": "H"},
-        {"task": "First firmware for MB validation", "person": "Sander", "start": "2026-04-13", "days": 5, "effort": "L", "confidence": "M"},
-        {"task": "More firmware ready", "person": "Sander", "start": "2026-04-27", "days": 5, "effort": "M", "confidence": "M"}
+        {
+          "id": "T12",
+          "task": "BB improvement list & quick studies",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-06",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T13",
+          "task": "First firmware for MB validation",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-13",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T14",
+          "task": "More firmware ready",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-27",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        }
       ]
     },
     {
       "category": "Assembly & Build",
       "items": [
-        {"task": "BB-1V2 assembly (DC motor)", "person": "Sander", "start": "2026-03-30", "days": 5, "effort": "M", "confidence": "H"},
-        {"task": "Spark assembly", "person": "Sander", "start": "2026-05-18", "days": 5, "effort": "L", "confidence": "M"}
+        {
+          "id": "T15",
+          "task": "BB-1V2 assembly (DC motor)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-03-30",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T16",
+          "task": "Spark assembly",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-18",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        }
       ]
     },
     {
       "category": "Testing & Validation",
       "items": [
-        {"task": "BB-1V2 full system validation (EH+EEC)", "person": "Sander", "start": "2026-03-30", "days": 5, "effort": "M", "confidence": "H"},
-        {"task": "MBD actuator testing", "person": "Sander", "start": "2026-03-30", "days": 5, "effort": "M", "confidence": "H"},
-        {"task": "EEC upgrade results evaluated", "person": "Sander", "start": "2026-04-06", "days": 5, "effort": "S", "confidence": "H"},
-        {"task": "MB validation", "person": "Sander", "start": "2026-04-13", "days": 5, "effort": "M", "confidence": "M"},
-        {"task": "EEC validated", "person": "Sander", "start": "2026-05-04", "days": 5, "effort": "M", "confidence": "M"},
-        {"task": "First integrated test (ctrl+fw+EEC)", "person": "Sander", "start": "2026-05-04", "days": 5, "effort": "L", "confidence": "M"},
-        {"task": "First EWS-BEH power measurement test", "person": "Sander", "start": "2026-05-04", "days": 5, "effort": "M", "confidence": "M"},
-        {"task": "Controller continued testing", "person": "Sander", "start": "2026-05-11", "days": 5, "effort": "M", "confidence": "H"},
-        {"task": "First data dashboard testing", "person": "Sander", "start": "2026-05-11", "days": 5, "effort": "M", "confidence": "M"},
-        {"task": "Delay buffer (controller)", "person": "Sander", "start": "2026-05-11", "days": 5, "effort": "S", "confidence": "H"},
-        {"task": "Spark first mechanical testing", "person": "Sander", "start": "2026-05-18", "days": 5, "effort": "M", "confidence": "M"},
-        {"task": "First Spark + Controller system test", "person": "Sander", "start": "2026-05-18", "days": 5, "effort": "L", "confidence": "L"},
-        {"task": "Further Spark mechanical testing", "person": "Sander", "start": "2026-05-25", "days": 5, "effort": "M", "confidence": "M"},
-        {"task": "Full integrated test (Mech+EEC+Ctrl)", "person": "Sander", "start": "2026-05-25", "days": 5, "effort": "L", "confidence": "L"},
-        {"task": "Final total system test + endurance", "person": "Sander", "start": "2026-05-25", "days": 5, "effort": "L", "confidence": "L"},
-        {"task": "Full system test with EWS-B + server", "person": "Sander", "start": "2026-05-25", "days": 5, "effort": "L", "confidence": "L"}
+        {
+          "id": "T17",
+          "task": "BB-1V2 full system validation (EH+EEC)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-03-30",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T18",
+          "task": "MBD actuator testing",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-03-30",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T19",
+          "task": "EEC upgrade results evaluated",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-06",
+          "days": 5,
+          "effort": "S",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T20",
+          "task": "MB validation",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-04-13",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T21",
+          "task": "EEC validated",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-04",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T22",
+          "task": "First integrated test (ctrl+fw+EEC)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-04",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T23",
+          "task": "First EWS-BEH power measurement test",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-04",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T24",
+          "task": "Controller continued testing",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-11",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T25",
+          "task": "First data dashboard testing",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-11",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T26",
+          "task": "Delay buffer (controller)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-11",
+          "days": 5,
+          "effort": "S",
+          "difficulty": "H",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T27",
+          "task": "Spark first mechanical testing",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-18",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T28",
+          "task": "First Spark + Controller system test",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-18",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "L",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T29",
+          "task": "Further Spark mechanical testing",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-25",
+          "days": 5,
+          "effort": "M",
+          "difficulty": "M",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T30",
+          "task": "Full integrated test (Mech+EEC+Ctrl)",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-25",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "L",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T31",
+          "task": "Final total system test + endurance",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-25",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "L",
+          "depends_on": [],
+          "status": "on-track"
+        },
+        {
+          "id": "T32",
+          "task": "Full system test with EWS-B + server",
+          "person": [
+            "Sander"
+          ],
+          "start": "2026-05-25",
+          "days": 5,
+          "effort": "L",
+          "difficulty": "L",
+          "depends_on": [],
+          "status": "on-track"
+        }
       ]
     }
   ]
