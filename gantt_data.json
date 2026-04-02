@@ -105,8 +105,7 @@
           "days": 5,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T7",
@@ -118,8 +117,7 @@
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         }
       ]
     },
@@ -130,14 +128,15 @@
           "id": "T8",
           "task": "MBD board (ordered → delivered)",
           "person": [
-            "Sander"
+            "Camilo",
+            "Ernst",
+            "Nathan"
           ],
           "start": "2026-03-25",
           "days": 10,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T9",
@@ -149,8 +148,7 @@
           "days": 14,
           "effort": "S",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T10",
@@ -162,8 +160,7 @@
           "days": 15,
           "effort": "S",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T11",
@@ -175,8 +172,7 @@
           "days": 17,
           "effort": "S",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         }
       ]
     },
@@ -193,8 +189,7 @@
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T13",
@@ -206,8 +201,7 @@
           "days": 5,
           "effort": "L",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T14",
@@ -219,8 +213,7 @@
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         }
       ]
     },
@@ -231,14 +224,14 @@
           "id": "T15",
           "task": "BB-1V2 assembly (DC motor)",
           "person": [
-            "Sander"
+            "Sander",
+            "Wybe"
           ],
           "start": "2026-03-30",
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T16",
@@ -250,8 +243,9 @@
           "days": 5,
           "effort": "L",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T11"
+          ]
         }
       ]
     },
@@ -268,21 +262,20 @@
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T18",
           "task": "MBD actuator testing",
           "person": [
-            "Sander"
+            "Sander",
+            "Wybe"
           ],
           "start": "2026-03-30",
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T19",
@@ -294,8 +287,7 @@
           "days": 5,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T20",
@@ -307,21 +299,25 @@
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T9",
+            "T13"
+          ]
         },
         {
           "id": "T21",
           "task": "EEC validated",
           "person": [
-            "Sander"
+            "Sander",
+            "Thijs"
           ],
           "start": "2026-05-04",
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T10"
+          ]
         },
         {
           "id": "T22",
@@ -333,8 +329,10 @@
           "days": 5,
           "effort": "L",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T21",
+            "T14"
+          ]
         },
         {
           "id": "T23",
@@ -346,21 +344,22 @@
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T24",
           "task": "Controller continued testing",
           "person": [
-            "Sander"
+            "Sander",
+            "Wybe"
           ],
           "start": "2026-05-11",
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T22"
+          ]
         },
         {
           "id": "T25",
@@ -372,34 +371,37 @@
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T6"
+          ]
         },
         {
           "id": "T26",
           "task": "Delay buffer (controller)",
           "person": [
-            "Sander"
+            "Sander",
+            "Thijs"
           ],
           "start": "2026-05-11",
           "days": 5,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T27",
           "task": "Spark first mechanical testing",
           "person": [
-            "Sander"
+            "Sander",
+            "Thijs"
           ],
           "start": "2026-05-18",
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T16"
+          ]
         },
         {
           "id": "T28",
@@ -411,8 +413,10 @@
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T27",
+            "T24"
+          ]
         },
         {
           "id": "T29",
@@ -424,8 +428,9 @@
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T27"
+          ]
         },
         {
           "id": "T30",
@@ -437,8 +442,9 @@
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T28"
+          ]
         },
         {
           "id": "T31",
@@ -450,8 +456,9 @@
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T30"
+          ]
         },
         {
           "id": "T32",
@@ -463,8 +470,10 @@
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T30",
+            "T25"
+          ]
         }
       ]
     }
