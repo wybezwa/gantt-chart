@@ -1,6 +1,6 @@
 # Sander Roadmap — Next 2 Months (W14–W22)
 
-> Auto-generated from `gantt_data.json` on 2026-04-02 11:45
+> Auto-generated from `gantt_data.json` on 2026-04-02 09:50
 > Calendar range: 2026-03-30 to 2026-05-31
 
 ## Milestones
@@ -9,15 +9,15 @@
 
 ## Design & Planning
 
-| ID  | Task                                 | Person(s) | Start      | Days | Effort | Difficulty | Status | Depends On |
-| :-- | :----------------------------------- | :-------- | :--------- | ---: | :----: | :--------: | :----: | :--------- |
-| T1  | Confirmed controller path (decision) | Sander    | 2026-04-06 |    5 |   M    |     H      |   ✅    | —          |
-| T2  | Initial controller architecture      | Sander    | 2026-04-13 |    5 |   L    |     M      |   ✅    | —          |
-| T3  | Spark basic system design            | Sander    | 2026-04-20 |    5 |   L    |     M      |   ✅    | —          |
-| T4  | Spark mechanical design decisions    | Sander    | 2026-04-20 |    5 |   M    |     H      |   ✅    | —          |
-| T5  | Spark critical parts finalised       | Sander    | 2026-04-27 |    5 |   M    |     M      |   ✅    | —          |
-| T6  | EWS dashboard requirements defined   | Sander    | 2026-04-27 |    5 |   S    |     H      |   ✅    | —          |
-| T7  | Total system validation planning     | Sander    | 2026-05-11 |    5 |   M    |     H      |   ✅    | —          |
+| ID | Task | Person(s) | Start | Days | Effort | Difficulty | Status | Depends On |
+|:---|:-----|:----------|:------|-----:|:------:|:----------:|:------:|:-----------|
+| T1 | Confirmed controller path (decision) | Sander | 2026-04-06 | 5 | M | H | ✅ | — |
+| T2 | Initial controller architecture | Sander | 2026-04-13 | 5 | L | M | ✅ | — |
+| T3 | Spark basic system design | Sander | 2026-04-20 | 5 | L | M | ✅ | — |
+| T4 | Spark mechanical design decisions | Sander | 2026-04-20 | 5 | M | H | ✅ | — |
+| T5 | Spark critical parts finalised | Sander | 2026-04-27 | 5 | M | M | ✅ | — |
+| T6 | EWS dashboard requirements defined | Sander | 2026-04-27 | 5 | S | H | ✅ | — |
+| T7 | Total system validation planning | Sander | 2026-05-11 | 5 | M | H | ✅ | — |
 
 ## Hardware Deliveries
 
