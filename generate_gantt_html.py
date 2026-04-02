@@ -41,11 +41,12 @@ def generate_markdown(data):
         cat = group["category"]
         lines.append(f"## {cat}")
         lines.append("")
-        lines.append("| ID | Task | Person(s) | Start | Days | Effort | Difficulty | Status | Depends On |")
-        lines.append("|:---|:-----|:----------|:------|-----:|:------:|:----------:|:------:|:-----------|")
+        lines.append("| ID | Task | Owner | Person(s) | Start | Days | Effort | Priority | Status | Depends On |")
+        lines.append("|:---|:-----|:------|:----------|:------|-----:|:------:|:--------:|:------:|:-----------|")
         for item in group["items"]:
             tid = item.get("id", "")
             task = item["task"]
+            owner = item.get("owner", "")
             person = item.get("person", [])
             if isinstance(person, str):
                 person = [person]
@@ -53,12 +54,12 @@ def generate_markdown(data):
             start = item["start"]
             days = item["days"]
             effort = item.get("effort", "")
-            diff = item.get("difficulty", item.get("confidence", ""))
+            prio = item.get("priority", item.get("difficulty", ""))
             deps = item.get("depends_on", [])
             deps_str = ", ".join(deps) if deps else "—"
             status = item.get("status", "on-track")
             status_display = {"on-track": "✅", "delayed": "⚠️", "done": "✔️", "not-needed": "➖"}.get(status, status)
-            lines.append(f"| {tid} | {task} | {persons} | {start} | {days} | {effort} | {diff} | {status_display} | {deps_str} |")
+            lines.append(f"| {tid} | {task} | {owner} | {persons} | {start} | {days} | {effort} | {prio} | {status_display} | {deps_str} |")
         lines.append("")
     lines.append("---")
     lines.append("")
@@ -214,11 +215,12 @@ html = f"""<!DOCTYPE html>
     padding-left: 12px;
   }}
 
+  td.owner {{ min-width: 80px; text-align: center; font-size: 11px; color: #444; position: relative; }}
   td.person {{ min-width: 90px; text-align: center; font-size: 11px; color: #555; position: relative; }}
   td.date {{ min-width: 90px; text-align: center; font-size: 11px; font-family: monospace; }}
   td.days {{ min-width: 35px; text-align: center; font-size: 11px; }}
   td.effort {{ min-width: 40px; text-align: center; font-size: 11px; }}
-  td.diff {{ min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }}
+  td.prio {{ min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }}
   td.deps {{ min-width: 80px; text-align: center; font-size: 10px; color: #555; position: relative; }}
 
   td.status {{ min-width: 75px; text-align: center; font-size: 11px; font-weight: 600; }}
@@ -426,6 +428,56 @@ html = f"""<!DOCTYPE html>
   .footer {{
     margin-top: 16px; font-size: 11px; color: #999; font-style: italic;
   }}
+
+  /* Current Priorities section */
+  .priorities-section {{
+    margin-top: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }}
+
+  .priorities-section h2 {{
+    font-size: 16px;
+    color: var(--header-bg);
+    margin-bottom: 12px;
+  }}
+
+  .prio-table {{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }}
+
+  .prio-table th {{
+    background: var(--header-bg);
+    color: var(--header-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 10px;
+    text-align: left;
+    position: static;
+  }}
+
+  .prio-table td {{
+    padding: 5px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    height: auto;
+  }}
+
+  .prio-table tr:hover td {{
+    background: #f5f8ff;
+  }}
+
+  .prio-badge {{
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 11px;
+  }}
 </style>
 </head>
 <body>
@@ -457,6 +509,14 @@ html = f"""<!DOCTYPE html>
   <div id="workload-bars"></div>
 </div>
 
+<div class="priorities-section" id="priorities-section">
+  <h2>Current Priorities</h2>
+  <table class="prio-table" id="prio-table">
+    <thead><tr><th>Owner</th><th>Current Task</th><th>Person(s)</th><th>ID</th><th>Priority</th><th>Start</th><th>Days Left</th><th>Category</th></tr></thead>
+    <tbody id="prio-body"></tbody>
+  </table>
+</div>
+
 <div class="footer" id="footer"></div>
 
 <script>
@@ -465,8 +525,8 @@ html = f"""<!DOCTYPE html>
 // ═══════════════════════════════════════════════════════════════════
 const DATA = {data_json};
 
-// Number of fixed columns before calendar: ID, Task, Person, Start, Days, Effort, Diff, Deps, Status
-const DATA_COLS = 9;
+// Number of fixed columns before calendar: ID, Task, Owner, Person, Start, Days, Effort, Prio, Deps, Status
+const DATA_COLS = 10;
 
 // ═══════════════════════════════════════════════════════════════════
 // Helpers
@@ -538,6 +598,7 @@ function render() {{
   renderBody();
   renderLegend();
   renderWorkload();
+  renderCurrentPriorities();
   drawLines();
   drawDependencies();
 }}
@@ -571,7 +632,7 @@ function renderHead() {{
 
   // Column headers
   const hrow = document.createElement('tr');
-  ['ID', 'Task', 'Person(s)', 'Start', 'Days', 'Effort', 'Diff.', 'Deps', 'Status'].forEach(h => {{
+  ['ID', 'Task', 'Owner', 'Person(s)', 'Start', 'Days', 'Effort', 'Prio.', 'Deps', 'Status'].forEach(h => {{
     const th = document.createElement('th');
     th.textContent = h;
     hrow.appendChild(th);
@@ -624,17 +685,34 @@ function renderBody() {{
       tdTask.addEventListener('blur', () => {{ item.task = tdTask.textContent.trim(); saveLocal(); }});
       tr.appendChild(tdTask);
 
-      // 3. Person (multi-select)
+      // 3. Owner (dropdown single-select)
+      const tdOwner = document.createElement('td');
+      tdOwner.className = 'owner';
+      const selOwner = document.createElement('select');
+      const ownerOpts = [''].concat(DATA.people);
+      selOwner.innerHTML = ownerOpts.map(p =>
+        `<option value="${{p}}" ${{p===(item.owner||'')?'selected':''}}>${{p || '\u2014'}}</option>`
+      ).join('');
+      selOwner.addEventListener('change', () => {{
+        item.owner = selOwner.value;
+        saveLocal();
+        renderCurrentPriorities();
+      }});
+      tdOwner.appendChild(selOwner);
+      tr.appendChild(tdOwner);
+
+      // 4. Person(s) (multi-select)
       const tdPerson = document.createElement('td');
       tdPerson.className = 'person';
       buildMultiSelect(tdPerson, DATA.people, getPersonArray(item), (sel) => {{
         item.person = sel;
         saveLocal();
         renderWorkload();
+        renderCurrentPriorities();
       }});
       tr.appendChild(tdPerson);
 
-      // 4. Start date (editable)
+      // 5. Start date (editable)
       const tdStart = document.createElement('td');
       tdStart.className = 'date';
       tdStart.contentEditable = 'true';
@@ -652,7 +730,7 @@ function renderBody() {{
       }});
       tr.appendChild(tdStart);
 
-      // 5. Days (editable)
+      // 6. Days (editable)
       const tdDays = document.createElement('td');
       tdDays.className = 'days';
       tdDays.contentEditable = 'true';
@@ -671,7 +749,7 @@ function renderBody() {{
       }});
       tr.appendChild(tdDays);
 
-      // 6. Effort (dropdown)
+      // 7. Effort (dropdown)
       const tdEffort = document.createElement('td');
       tdEffort.className = 'effort';
       const selEffort = document.createElement('select');
@@ -682,30 +760,31 @@ function renderBody() {{
       tdEffort.appendChild(selEffort);
       tr.appendChild(tdEffort);
 
-      // 7. Difficulty (dropdown with flipped colors: H=red, L=green)
-      const tdDiff = document.createElement('td');
-      const selDiff = document.createElement('select');
-      selDiff.innerHTML = ['H','M','L'].map(v =>
-        `<option value="${{v}}" ${{v===(item.difficulty||item.confidence)?'selected':''}}>${{v}}</option>`
+      // 8. Priority (dropdown: H=red, M=yellow, L=green)
+      const tdPrio = document.createElement('td');
+      const selPrio = document.createElement('select');
+      selPrio.innerHTML = ['H','M','L'].map(v =>
+        `<option value="${{v}}" ${{v===(item.priority||item.difficulty||'M')?'selected':''}}>${{v}}</option>`
       ).join('');
-      const diffColors = {{ H: ['#FFC7CE','#8b1a1a'], M: ['#FFEB9C','#7a6100'], L: ['#C6EFCE','#1a6b1a'] }};
-      function updateDiffStyle() {{
-        const c = diffColors[selDiff.value] || ['transparent','#333'];
-        tdDiff.style.background = c[0];
-        tdDiff.style.color = c[1];
-        tdDiff.className = 'diff';
+      const prioColors = {{ H: ['#FFC7CE','#8b1a1a'], M: ['#FFEB9C','#7a6100'], L: ['#C6EFCE','#1a6b1a'] }};
+      function updatePrioStyle() {{
+        const c = prioColors[selPrio.value] || ['transparent','#333'];
+        tdPrio.style.background = c[0];
+        tdPrio.style.color = c[1];
+        tdPrio.className = 'prio';
       }}
-      selDiff.addEventListener('change', () => {{
-        item.difficulty = selDiff.value;
-        updateDiffStyle();
+      selPrio.addEventListener('change', () => {{
+        item.priority = selPrio.value;
+        updatePrioStyle();
         saveLocal();
         renderWorkload();
+        renderCurrentPriorities();
       }});
-      tdDiff.appendChild(selDiff);
-      tr.appendChild(tdDiff);
-      updateDiffStyle();
+      tdPrio.appendChild(selPrio);
+      tr.appendChild(tdPrio);
+      updatePrioStyle();
 
-      // 8. Dependencies (multi-select of task IDs)
+      // 9. Dependencies (multi-select of task IDs)
       const tdDeps = document.createElement('td');
       tdDeps.className = 'deps';
       const otherIds = allTaskIds().filter(id => id !== item.id);
@@ -716,7 +795,7 @@ function renderBody() {{
       }});
       tr.appendChild(tdDeps);
 
-      // 9. Status (dropdown)
+      // 10. Status (dropdown)
       const tdStatus = document.createElement('td');
       const selStatus = document.createElement('select');
       const statusOpts = [
@@ -861,6 +940,11 @@ function drawDependencies() {{
 
   const taskMap = buildTaskMap();
 
+  // Get the left edge of the calendar area to clamp arrows
+  const firstCalIdx = DATA_COLS;
+  const firstCalCell = headerCells[firstCalIdx];
+  const calLeftX = firstCalCell ? (firstCalCell.getBoundingClientRect().left - wrapperRect.left + wrapper.scrollLeft) : 0;
+
   DATA.tasks.forEach(group => {{
     group.items.forEach(item => {{
       if (!item.depends_on || !item.depends_on.length || !item.id) return;
@@ -880,10 +964,21 @@ function drawDependencies() {{
 
         if (predEnd === null || succStart === null) return;
 
-        // Draw right-angle connector
+        // Draw right-angle connector with clamped routing
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const midX = (predEnd + succStart) / 2;
-        const d = `M ${{predEnd}} ${{predY}} L ${{midX}} ${{predY}} L ${{midX}} ${{succY}} L ${{succStart}} ${{succY}}`;
+        const gap = 6; // small gap from bar edge
+        let d;
+
+        if (predEnd + gap < succStart) {{
+          // Normal case: predecessor ends before successor starts
+          const midX = Math.max((predEnd + succStart) / 2, calLeftX);
+          d = `M ${{predEnd}} ${{predY}} L ${{midX}} ${{predY}} L ${{midX}} ${{succY}} L ${{succStart}} ${{succY}}`;
+        }} else {{
+          // Overlap case: route below/above to avoid crossing bars
+          const detourX = Math.max(Math.min(predEnd, succStart) - 12, calLeftX);
+          d = `M ${{predEnd}} ${{predY}} L ${{predEnd + gap}} ${{predY}} L ${{predEnd + gap}} ${{Math.max(predY, succY) + 14}} L ${{detourX}} ${{Math.max(predY, succY) + 14}} L ${{detourX}} ${{succY}} L ${{succStart}} ${{succY}}`;
+        }}
+
         path.setAttribute('d', d);
         path.setAttribute('stroke', '#666');
         path.setAttribute('stroke-width', '1.5');
@@ -969,7 +1064,7 @@ function renderWorkload() {{
   const container = document.getElementById('workload-bars');
   container.innerHTML = '';
 
-  const diffWeight = {{ H: 3, M: 2, L: 1 }};
+  const prioWeight = {{ H: 3, M: 2, L: 1 }};
   const stats = {{}};
 
   DATA.people.forEach(p => {{ stats[p] = {{ score: 0, tasks: 0, days: 0 }}; }});
@@ -978,8 +1073,8 @@ function renderWorkload() {{
     group.items.forEach(item => {{
       const persons = getPersonArray(item);
       if (!persons.length) return;
-      const d = item.difficulty || item.confidence || 'M';
-      const w = diffWeight[d] || 2;
+      const d = item.priority || item.difficulty || 'M';
+      const w = prioWeight[d] || 2;
       const share = persons.length;
       persons.forEach(p => {{
         if (!stats[p]) stats[p] = {{ score: 0, tasks: 0, days: 0 }};
@@ -1034,6 +1129,85 @@ function renderWorkload() {{
 }}
 
 // ═══════════════════════════════════════════════════════════════════
+// Current Priorities (per-person view)
+// ═══════════════════════════════════════════════════════════════════
+function renderCurrentPriorities() {{
+  const tbody = document.getElementById('prio-body');
+  tbody.innerHTML = '';
+
+  const prioRank = {{ H: 0, M: 1, L: 2 }};
+  const prioColors = {{ H: ['#FFC7CE','#8b1a1a'], M: ['#FFEB9C','#7a6100'], L: ['#C6EFCE','#1a6b1a'] }};
+  const now = new Date(); now.setHours(0,0,0,0);
+
+  // For each person, find their current top-priority active task
+  const personTasks = {{}};
+  DATA.people.forEach(p => {{ personTasks[p] = []; }});
+
+  DATA.tasks.forEach(group => {{
+    group.items.forEach(item => {{
+      const status = item.status || 'on-track';
+      if (status === 'done' || status === 'not-needed') return;
+      const persons = getPersonArray(item);
+      const startDt = parseDate(item.start);
+      const endDt = addDays(startDt, item.days);
+      // Include tasks that are currently active or upcoming (not yet ended)
+      if (endDt <= now && status !== 'delayed') return;
+      persons.forEach(p => {{
+        if (!personTasks[p]) personTasks[p] = [];
+        personTasks[p].push({{ ...item, _category: group.category, _startDt: startDt, _endDt: endDt }});
+      }});
+    }});
+  }});
+
+  // Sort each person's tasks: by priority (H first), then by start date
+  DATA.people.forEach(person => {{
+    const tasks = personTasks[person] || [];
+    if (!tasks.length) {{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td style="font-weight:600">${{person}}</td><td colspan="7" style="color:#999;font-style:italic">No active tasks</td>`;
+      tbody.appendChild(tr);
+      return;
+    }}
+
+    tasks.sort((a, b) => {{
+      const pa = prioRank[a.priority || a.difficulty || 'M'] ?? 1;
+      const pb = prioRank[b.priority || b.difficulty || 'M'] ?? 1;
+      if (pa !== pb) return pa - pb;
+      return a._startDt - b._startDt;
+    }});
+
+    // Show top task (current priority) and up to 2 more
+    const show = tasks.slice(0, 3);
+    show.forEach((task, idx) => {{
+      const tr = document.createElement('tr');
+      const prio = task.priority || task.difficulty || 'M';
+      const colors = prioColors[prio] || ['transparent', '#333'];
+      const daysLeft = Math.max(0, daysBetween(now, task._endDt));
+      const isActive = task._startDt <= now;
+      const allPersons = getPersonArray(task).join(', ');
+
+      tr.innerHTML = `
+        <td style="font-weight:${{idx === 0 ? '700' : '400'}}">${{idx === 0 ? person : ''}}</td>
+        <td style="${{idx === 0 ? 'font-weight:600' : 'color:#666'}}">${{task.task}}</td>
+        <td style="text-align:center;font-size:11px;color:#555">${{allPersons}}</td>
+        <td style="text-align:center;font-family:monospace;font-size:10px;color:#888">${{task.id || ''}}</td>
+        <td style="text-align:center"><span class="prio-badge" style="background:${{colors[0]}};color:${{colors[1]}}">${{prio}}</span></td>
+        <td style="font-family:monospace;font-size:11px">${{task.start}}</td>
+        <td style="text-align:center">${{isActive ? daysLeft + 'd remaining' : 'starts in ' + daysBetween(now, task._startDt) + 'd'}}</td>
+        <td style="font-size:11px;color:#666">${{task._category}}</td>
+      `;
+      tbody.appendChild(tr);
+    }});
+
+    if (tasks.length > 3) {{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td></td><td colspan="7" style="color:#999;font-size:11px;font-style:italic">+ ${{tasks.length - 3}} more tasks</td>`;
+      tbody.appendChild(tr);
+    }}
+  }});
+}}
+
+// ═══════════════════════════════════════════════════════════════════
 // Legend & footer
 // ═══════════════════════════════════════════════════════════════════
 function renderLegend() {{
@@ -1046,7 +1220,7 @@ function renderLegend() {{
 
   document.getElementById('info').innerHTML =
     '<strong>Effort:</strong> S = Small (&frac12;day) &middot; M = Medium (1-3d) &middot; L = Large (week+)<br>' +
-    '<strong>Difficulty:</strong> H = High (hard, red) &middot; M = Medium &middot; L = Low (easy, green)';
+    '<strong>Priority:</strong> H = High (urgent, red) &middot; M = Medium &middot; L = Low (green)';
 
   const ll = document.getElementById('lines-legend');
   ll.innerHTML = '<span class="ll-swatch" style="background:#00B050"></span> Today &nbsp;&nbsp;' +

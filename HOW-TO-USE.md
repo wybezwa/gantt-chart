@@ -16,7 +16,7 @@ All editing happens inline — click any cell to modify it.
 | **Start** | Click to type | Start date in `YYYY-MM-DD` format |
 | **Days** | Click to type | Duration in calendar days |
 | **Effort** | Dropdown | S = Small (½ day), M = Medium (1–3 days), L = Large (week+) |
-| **Diff.** | Dropdown | Difficulty: H = Hard (red), M = Medium (yellow), L = Easy (green) |
+| **Prio.** | Dropdown | Priority: H = High (red), M = Medium (yellow), L = Low (green) |
 | **Deps** | Click → checkboxes | Select predecessor tasks by ID. Arrows show dependencies on the chart |
 | **Status** | Dropdown | On Track (green), Delayed (red), Done (blue), Not Needed (grey) |
 
@@ -47,10 +47,17 @@ GitHub Actions will auto-regenerate `index.html` and `gantt.md` from the updated
 ## Workload Summary
 
 Below the chart you'll find a **Workload Summary** showing each person's load:
-- Score = `days × difficulty weight` (L=1, M=2, H=3)
+- Score = `days × priority weight` (L=1, M=2, H=3)
 - For multi-person tasks, the load is split equally
 - Bars colored from green (low load) to red (high load)
 - Shows task count and total days per person
+
+## Current Priorities
+
+Below the workload summary, the **Current Priorities** table shows each person's most important active tasks:
+- Tasks are ranked by priority (H first) then by start date
+- Up to 3 tasks shown per person
+- Shows task name, ID, priority badge, start date, and remaining days
 
 ## Dependency Arrows
 

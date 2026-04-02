@@ -39,9 +39,10 @@
           "start": "2026-04-06",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
+          "priority": "H",
           "depends_on": [],
-          "status": "on-track"
+          "status": "on-track",
+          "owner": "Sander"
         },
         {
           "id": "T2",
@@ -52,9 +53,10 @@
           "start": "2026-04-13",
           "days": 5,
           "effort": "L",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [],
-          "status": "on-track"
+          "status": "on-track",
+          "owner": "Sander"
         },
         {
           "id": "T3",
@@ -65,9 +67,10 @@
           "start": "2026-04-20",
           "days": 5,
           "effort": "L",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [],
-          "status": "on-track"
+          "status": "on-track",
+          "owner": "Sander"
         },
         {
           "id": "T4",
@@ -78,9 +81,10 @@
           "start": "2026-04-20",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
+          "priority": "H",
           "depends_on": [],
-          "status": "on-track"
+          "status": "on-track",
+          "owner": "Sander"
         },
         {
           "id": "T5",
@@ -91,9 +95,10 @@
           "start": "2026-04-27",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [],
-          "status": "on-track"
+          "status": "on-track",
+          "owner": "Sander"
         },
         {
           "id": "T6",
@@ -104,8 +109,9 @@
           "start": "2026-04-27",
           "days": 5,
           "effort": "S",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T7",
@@ -116,8 +122,9 @@
           "start": "2026-05-11",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         }
       ]
     },
@@ -135,8 +142,9 @@
           "start": "2026-03-25",
           "days": 10,
           "effort": "S",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Camilo"
         },
         {
           "id": "T9",
@@ -147,8 +155,9 @@
           "start": "2026-03-28",
           "days": 14,
           "effort": "S",
-          "difficulty": "M",
-          "depends_on": []
+          "priority": "M",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T10",
@@ -159,8 +168,9 @@
           "start": "2026-04-13",
           "days": 15,
           "effort": "S",
-          "difficulty": "M",
-          "depends_on": []
+          "priority": "M",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T11",
@@ -171,8 +181,9 @@
           "start": "2026-04-29",
           "days": 17,
           "effort": "S",
-          "difficulty": "M",
-          "depends_on": []
+          "priority": "M",
+          "depends_on": [],
+          "owner": "Sander"
         }
       ]
     },
@@ -188,8 +199,9 @@
           "start": "2026-04-06",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T13",
@@ -200,8 +212,9 @@
           "start": "2026-04-13",
           "days": 5,
           "effort": "L",
-          "difficulty": "M",
-          "depends_on": []
+          "priority": "M",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T14",
@@ -212,8 +225,9 @@
           "start": "2026-04-27",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
-          "depends_on": []
+          "priority": "M",
+          "depends_on": [],
+          "owner": "Sander"
         }
       ]
     },
@@ -230,8 +244,9 @@
           "start": "2026-03-30",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T16",
@@ -242,10 +257,11 @@
           "start": "2026-05-18",
           "days": 5,
           "effort": "L",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [
             "T11"
-          ]
+          ],
+          "owner": "Sander"
         }
       ]
     },
@@ -261,8 +277,9 @@
           "start": "2026-03-30",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T18",
@@ -274,8 +291,9 @@
           "start": "2026-03-30",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T19",
@@ -286,8 +304,9 @@
           "start": "2026-04-06",
           "days": 5,
           "effort": "S",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T20",
@@ -298,11 +317,12 @@
           "start": "2026-04-13",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [
             "T9",
             "T13"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T21",
@@ -314,10 +334,11 @@
           "start": "2026-05-04",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [
             "T10"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T22",
@@ -328,11 +349,12 @@
           "start": "2026-05-04",
           "days": 5,
           "effort": "L",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [
             "T21",
             "T14"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T23",
@@ -343,8 +365,9 @@
           "start": "2026-05-04",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
-          "depends_on": []
+          "priority": "M",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T24",
@@ -356,10 +379,11 @@
           "start": "2026-05-11",
           "days": 5,
           "effort": "M",
-          "difficulty": "H",
+          "priority": "H",
           "depends_on": [
             "T22"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T25",
@@ -370,10 +394,11 @@
           "start": "2026-05-11",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [
             "T6"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T26",
@@ -385,8 +410,9 @@
           "start": "2026-05-11",
           "days": 5,
           "effort": "S",
-          "difficulty": "H",
-          "depends_on": []
+          "priority": "H",
+          "depends_on": [],
+          "owner": "Sander"
         },
         {
           "id": "T27",
@@ -398,10 +424,11 @@
           "start": "2026-05-18",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [
             "T16"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T28",
@@ -412,11 +439,12 @@
           "start": "2026-05-18",
           "days": 5,
           "effort": "L",
-          "difficulty": "L",
+          "priority": "L",
           "depends_on": [
             "T27",
             "T24"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T29",
@@ -427,10 +455,11 @@
           "start": "2026-05-25",
           "days": 5,
           "effort": "M",
-          "difficulty": "M",
+          "priority": "M",
           "depends_on": [
             "T27"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T30",
@@ -441,10 +470,11 @@
           "start": "2026-05-25",
           "days": 5,
           "effort": "L",
-          "difficulty": "L",
+          "priority": "L",
           "depends_on": [
             "T28"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T31",
@@ -455,10 +485,11 @@
           "start": "2026-05-25",
           "days": 5,
           "effort": "L",
-          "difficulty": "L",
+          "priority": "L",
           "depends_on": [
             "T30"
-          ]
+          ],
+          "owner": "Sander"
         },
         {
           "id": "T32",
@@ -469,11 +500,12 @@
           "start": "2026-05-25",
           "days": 5,
           "effort": "L",
-          "difficulty": "L",
+          "priority": "L",
           "depends_on": [
             "T30",
             "T25"
-          ]
+          ],
+          "owner": "Sander"
         }
       ]
     }
