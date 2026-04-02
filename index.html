@@ -494,8 +494,7 @@ const DATA = {
           "days": 5,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T7",
@@ -507,8 +506,7 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         }
       ]
     },
@@ -519,14 +517,15 @@ const DATA = {
           "id": "T8",
           "task": "MBD board (ordered → delivered)",
           "person": [
-            "Sander"
+            "Camilo",
+            "Ernst",
+            "Nathan"
           ],
           "start": "2026-03-25",
           "days": 10,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T9",
@@ -538,8 +537,7 @@ const DATA = {
           "days": 14,
           "effort": "S",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T10",
@@ -551,8 +549,7 @@ const DATA = {
           "days": 15,
           "effort": "S",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T11",
@@ -564,8 +561,7 @@ const DATA = {
           "days": 17,
           "effort": "S",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         }
       ]
     },
@@ -582,8 +578,7 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T13",
@@ -595,8 +590,7 @@ const DATA = {
           "days": 5,
           "effort": "L",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T14",
@@ -608,8 +602,7 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         }
       ]
     },
@@ -620,14 +613,14 @@ const DATA = {
           "id": "T15",
           "task": "BB-1V2 assembly (DC motor)",
           "person": [
-            "Sander"
+            "Sander",
+            "Wybe"
           ],
           "start": "2026-03-30",
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T16",
@@ -639,8 +632,9 @@ const DATA = {
           "days": 5,
           "effort": "L",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T11"
+          ]
         }
       ]
     },
@@ -657,21 +651,20 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T18",
           "task": "MBD actuator testing",
           "person": [
-            "Sander"
+            "Sander",
+            "Wybe"
           ],
           "start": "2026-03-30",
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T19",
@@ -683,8 +676,7 @@ const DATA = {
           "days": 5,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T20",
@@ -696,21 +688,25 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T9",
+            "T13"
+          ]
         },
         {
           "id": "T21",
           "task": "EEC validated",
           "person": [
-            "Sander"
+            "Sander",
+            "Thijs"
           ],
           "start": "2026-05-04",
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T10"
+          ]
         },
         {
           "id": "T22",
@@ -722,8 +718,10 @@ const DATA = {
           "days": 5,
           "effort": "L",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T21",
+            "T14"
+          ]
         },
         {
           "id": "T23",
@@ -735,21 +733,22 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T24",
           "task": "Controller continued testing",
           "person": [
-            "Sander"
+            "Sander",
+            "Wybe"
           ],
           "start": "2026-05-11",
           "days": 5,
           "effort": "M",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T22"
+          ]
         },
         {
           "id": "T25",
@@ -761,34 +760,37 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T6"
+          ]
         },
         {
           "id": "T26",
           "task": "Delay buffer (controller)",
           "person": [
-            "Sander"
+            "Sander",
+            "Thijs"
           ],
           "start": "2026-05-11",
           "days": 5,
           "effort": "S",
           "difficulty": "H",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": []
         },
         {
           "id": "T27",
           "task": "Spark first mechanical testing",
           "person": [
-            "Sander"
+            "Sander",
+            "Thijs"
           ],
           "start": "2026-05-18",
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T16"
+          ]
         },
         {
           "id": "T28",
@@ -800,8 +802,10 @@ const DATA = {
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T27",
+            "T24"
+          ]
         },
         {
           "id": "T29",
@@ -813,8 +817,9 @@ const DATA = {
           "days": 5,
           "effort": "M",
           "difficulty": "M",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T27"
+          ]
         },
         {
           "id": "T30",
@@ -826,8 +831,9 @@ const DATA = {
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T28"
+          ]
         },
         {
           "id": "T31",
@@ -839,8 +845,9 @@ const DATA = {
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T30"
+          ]
         },
         {
           "id": "T32",
@@ -852,8 +859,10 @@ const DATA = {
           "days": 5,
           "effort": "L",
           "difficulty": "L",
-          "depends_on": [],
-          "status": "on-track"
+          "depends_on": [
+            "T30",
+            "T25"
+          ]
         }
       ]
     }
@@ -1451,7 +1460,7 @@ function renderLegend() {
 
   document.getElementById('footer').textContent =
     'Click any cell to edit • Bars update instantly • Changes auto-saved in browser • Use Save to File to write to disk • ' +
-    'Last generated: 2026-04-02 09:50' +
+    'Last generated: 2026-04-02 09:57' +
     (localStorage.getItem(STORAGE_KEY) ? ' • ⚠ You have unsaved browser edits (use Save or Reset)' : '');
 }
 
