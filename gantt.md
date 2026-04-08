@@ -1,10 +1,6 @@
 # Sander Roadmap — Next 2 Months (W14–W22)
 
-<<<<<<< HEAD
-> Auto-generated from `gantt_data.json` on 2026-04-08 15:52
-=======
-> Auto-generated from `gantt_data.json` on 2026-04-08 13:51
->>>>>>> d1b2b28c86460fde866d3cb9e2b806bc66bd1bb8
+> Auto-generated from `gantt_data.json` on 2026-04-08 13:55
 > Calendar range: 2026-03-30 to 2026-05-31
 
 ## Milestones
@@ -15,13 +11,13 @@
 
 | ID | Task | Project | System Level | Owner | End | Days | Priority | Status | Depends On |
 |:---|:-----|:--------|:-------------|:------|:----|-----:|:--------:|:------:|:-----------|
-| T1 | Confirmed controller path (decision document) | BB1-XX | Harvester controller system | Wybe | 2026-04-15 | 2 | H | ✅ | — |
-| T2 | Initial controller architecture | BB1-XX | Harvester controller system | Wybe | 2026-04-19 | 10 | M | ✅ | T1 |
+| T1 | Confirmed controller path (decision document) | BB1-V2 | Harvester controller system | Wybe | 2026-04-15 | 2 | H | ✅ | — |
+| T2 | Initial controller architecture | BB1-V2 | Harvester controller system | Wybe | 2026-04-19 | 10 | M | ✅ | — |
 | T3 | Spark basic system design | Spark | Total system | Sander | 2026-04-24 | 10 | H | ✅ | — |
-| T4 | Spark mechanical design decisions | Spark | Mechanical system | Sander | 2026-04-19 | 10 | M | ✅ | — |
-| T5 | Spark critical parts finalised | Spark | Total system | Sander | 2026-05-01 | 5 | H | ✅ | — |
+| T4 | Spark mechanical design decisions | Spark | Mechanical system | Sander | 2026-04-19 | 10 | M | ✅ | T3 |
+| T5 | Spark critical parts finalised | Spark | Total system | Sander | 2026-05-01 | 5 | H | ✅ | T4 |
 | T7 | Total system validation planning | Spark | Total system | Sander | 2026-05-15 | 5 | M | ✅ | — |
-| T12 | BB improvement list & quick studies | BB1-XX | Total system |  | 2026-04-11 | 5 | H | ✅ | — |
+| T12 | BB improvement list & quick studies | BB1-V2 | Total system |  | 2026-04-11 | 5 | H | ✅ | — |
 | T34 | Detailed design Spark ready and ordered | Spark | Mechanical system | Sander | 2026-05-08 | 5 | H | ✅ | — |
 | T35 | EEC design finished and ordered |  |  | Mathijs | 2026-04-17 | 5 | M | ✅ | — |
 | T36 | Main architecture EWS + Spark | Spark | Total system |  | 2026-05-01 | 10 | M | ✅ | — |
@@ -34,16 +30,16 @@
 | T9 | MB board (ordered → delivered) |  |  | Mathijs | 2026-04-08 | 14 | M | ✔️ | — |
 | T10 | EEC board (ordered → delivered) |  |  | Mathijs | 2026-05-01 | 14 | M | ✅ | — |
 | T11 | Spark parts (ordered → delivered) | Spark | Total system | Sander | 2026-05-20 | 21 | H | ✅ | T34 |
-| T39 | BB1-V3 order parts (ordered → delivered) | BB1-XX | Mechanical system | Sander | 2026-05-20 | 21 | M | ✅ | — |
+| T39 | BB1-V3 order parts (ordered → delivered) | BB1-V2 | Mechanical system | Sander | 2026-05-20 | 21 | M | ✅ | — |
 
 ## Assembly & Build
 
 | ID | Task | Project | System Level | Owner | End | Days | Priority | Status | Depends On |
 |:---|:-----|:--------|:-------------|:------|:----|-----:|:--------:|:------:|:-----------|
-| T15 | BB-1V2 assembly (DC motor) | BB1-XX | Mechanical system | Ernst | 2026-04-03 | 5 | H | ✔️ | — |
+| T15 | BB-1V2 assembly (DC motor) | BB1-V2 | Mechanical system | Ernst | 2026-04-03 | 5 | H | ✔️ | — |
 | T16 | Initial mechanical Spark assembly | Spark | Mechanical system | Ernst | 2026-05-22 | 5 | M | ✅ | T11 |
-| T37 | Total integrated Spark assembly | Spark | Total system | Sander | 2026-05-27 | 5 | M | ✅ | — |
-| T38 | BB1-V3 assembly | BB1-XX | Mechanical system | Ernst | 2026-04-24 | 3 | M | ✅ | — |
+| T37 | Total integrated Spark assembly | Spark | Total system | Sander | 2026-05-27 | 5 | M | ✅ | T16 |
+| T38 | BB1-V3 assembly | BB1-V2 | Mechanical system | Ernst | 2026-05-23 | 3 | M | ✅ | T39 |
 
 ## Testing & Validation
 
