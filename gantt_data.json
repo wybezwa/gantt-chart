@@ -43,7 +43,7 @@
           "depends_on": [],
           "status": "on-track",
           "owner": "Wybe",
-          "project": "BB1-XX",
+          "project": "BB1-V2",
           "system_level": "Harvester controller system",
           "end": "2026-04-15"
         },
@@ -55,12 +55,10 @@
           ],
           "days": 10,
           "priority": "M",
-          "depends_on": [
-            "T1"
-          ],
+          "depends_on": [],
           "status": "on-track",
           "owner": "Wybe",
-          "project": "BB1-XX",
+          "project": "BB1-V2",
           "system_level": "Harvester controller system",
           "end": "2026-04-19"
         },
@@ -89,7 +87,9 @@
           ],
           "days": 10,
           "priority": "M",
-          "depends_on": [],
+          "depends_on": [
+            "T3"
+          ],
           "status": "on-track",
           "project": "Spark",
           "system_level": "Mechanical system",
@@ -102,7 +102,9 @@
           "person": [],
           "days": 5,
           "priority": "H",
-          "depends_on": [],
+          "depends_on": [
+            "T4"
+          ],
           "status": "on-track",
           "project": "Spark",
           "system_level": "Total system",
@@ -133,7 +135,7 @@
           "depends_on": [],
           "end": "2026-04-11",
           "system_level": "Total system",
-          "project": "BB1-XX",
+          "project": "BB1-V2",
           "owner": "",
           "status": "on-track"
         },
@@ -257,7 +259,7 @@
           "status": "on-track",
           "owner": "Sander",
           "system_level": "Mechanical system",
-          "project": "BB1-XX"
+          "project": "BB1-V2"
         }
       ]
     },
@@ -273,7 +275,7 @@
           "days": 5,
           "priority": "H",
           "depends_on": [],
-          "project": "BB1-XX",
+          "project": "BB1-V2",
           "system_level": "Mechanical system",
           "end": "2026-04-03",
           "owner": "Ernst",
@@ -305,7 +307,9 @@
           "end": "2026-05-27",
           "days": 5,
           "priority": "M",
-          "depends_on": [],
+          "depends_on": [
+            "T16"
+          ],
           "status": "on-track",
           "owner": "Sander",
           "system_level": "Total system",
@@ -317,14 +321,16 @@
           "person": [
             "Ernst"
           ],
-          "end": "2026-04-24",
+          "end": "2026-05-23",
           "days": 3,
           "priority": "M",
-          "depends_on": [],
+          "depends_on": [
+            "T39"
+          ],
           "status": "on-track",
           "owner": "Ernst",
           "system_level": "Mechanical system",
-          "project": "BB1-XX"
+          "project": "BB1-V2"
         }
       ]
     },
@@ -600,6 +606,6 @@
   ],
   "projects": [
     "Spark",
-    "BB1-XX"
+    "BB1-V2"
   ]
 }
