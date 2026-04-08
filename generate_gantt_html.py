@@ -2,10 +2,11 @@
 
 The output is a self-contained HTML file where:
 - All data cells are editable inline (click to edit)
-- Bars redraw instantly when Start or Days change
+- Bars redraw instantly when End or Days change
 - Multi-person assignment with checkbox dropdowns
 - Task dependency arrows (SVG overlay)
 - Per-person workload summary
+- Project filtering
 - Save to File (File System Access API) + Download JSON fallback
 - No external dependencies
 
@@ -41,25 +42,26 @@ def generate_markdown(data):
         cat = group["category"]
         lines.append(f"## {cat}")
         lines.append("")
-        lines.append("| ID | Task | Owner | Person(s) | Start | Days | Effort | Priority | Status | Depends On |")
-        lines.append("|:---|:-----|:------|:----------|:------|-----:|:------:|:--------:|:------:|:-----------|")
+        lines.append("| ID | Task | Project | System Level | Owner | End | Days | Priority | Status | Depends On |")
+        lines.append("|:---|:-----|:--------|:-------------|:------|:----|-----:|:--------:|:------:|:-----------|")
         for item in group["items"]:
             tid = item.get("id", "")
             task = item["task"]
+            project = item.get("project", "")
+            system_level = item.get("system_level", "")
             owner = item.get("owner", "")
             person = item.get("person", [])
             if isinstance(person, str):
                 person = [person]
             persons = ", ".join(person)
-            start = item["start"]
+            end = item.get("end", "")
             days = item["days"]
-            effort = item.get("effort", "")
             prio = item.get("priority", item.get("difficulty", ""))
             deps = item.get("depends_on", [])
             deps_str = ", ".join(deps) if deps else "—"
             status = item.get("status", "on-track")
             status_display = {"on-track": "✅", "delayed": "⚠️", "done": "✔️", "not-needed": "➖"}.get(status, status)
-            lines.append(f"| {tid} | {task} | {owner} | {persons} | {start} | {days} | {effort} | {prio} | {status_display} | {deps_str} |")
+            lines.append(f"| {tid} | {task} | {project} | {system_level} | {owner} | {end} | {days} | {prio} | {status_display} | {deps_str} |")
         lines.append("")
     lines.append("---")
     lines.append("")
@@ -87,8 +89,8 @@ html = f"""<!DOCTYPE html>
     --header-text: #fff;
     --weekend-bg: #f5f5f5;
     --border: #e0e0e0;
-    --cell-h: 26px;
-    --cal-w: 22px;
+    --cell-h: 28px;
+    --cal-w: 28px;
   }}
 
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -146,6 +148,28 @@ html = f"""<!DOCTYPE html>
     margin-left: 8px;
   }}
 
+  .filter-bar {{
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+  }}
+
+  .filter-btn {{
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    background: #fff;
+  }}
+
+  .filter-btn.active {{
+    background: var(--header-bg);
+    color: #fff;
+    border-color: var(--header-bg);
+  }}
+
   .gantt-wrapper {{
     overflow-x: auto;
     border: 1px solid var(--border);
@@ -158,6 +182,8 @@ html = f"""<!DOCTYPE html>
   table {{
     border-collapse: collapse;
     white-space: nowrap;
+    table-layout: fixed;
+    width: max-content;
   }}
 
   .month-header {{
@@ -194,9 +220,13 @@ html = f"""<!DOCTYPE html>
   th.day-h.we {{ background: #1e3a6e; }}
 
   td {{
-    border-bottom: 1px solid #f0f0f0;
-    padding: 3px 6px;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1px 4px;
     height: var(--cell-h);
+    max-height: var(--cell-h);
+    overflow: hidden;
+    line-height: 1.2;
+    font-size: 11px;
   }}
 
   td.task-id {{
@@ -215,11 +245,13 @@ html = f"""<!DOCTYPE html>
     padding-left: 12px;
   }}
 
+  td.project {{ min-width: 80px; text-align: center; font-size: 11px; }}
+  td.system-level {{ min-width: 110px; text-align: center; font-size: 11px; }}
   td.owner {{ min-width: 80px; text-align: center; font-size: 11px; color: #444; position: relative; }}
+  td.owner-required {{ background: #FFF3CD !important; }}
   td.person {{ min-width: 90px; text-align: center; font-size: 11px; color: #555; position: relative; }}
   td.date {{ min-width: 90px; text-align: center; font-size: 11px; font-family: monospace; }}
   td.days {{ min-width: 35px; text-align: center; font-size: 11px; }}
-  td.effort {{ min-width: 40px; text-align: center; font-size: 11px; }}
   td.prio {{ min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }}
   td.deps {{ min-width: 80px; text-align: center; font-size: 10px; color: #555; position: relative; }}
 
@@ -235,6 +267,8 @@ html = f"""<!DOCTYPE html>
   tr.task-done td.cal.bar {{ opacity: 0.6; }}
   tr.task-not-needed td.task-name {{ text-decoration: line-through; color: #999; }}
   tr.task-done td.task-name {{ color: #2F5496; }}
+
+  tr.filtered-out {{ display: none; }}
 
   td[contenteditable="true"] {{
     cursor: text;
@@ -260,6 +294,12 @@ html = f"""<!DOCTYPE html>
     -webkit-appearance: none;
     appearance: none;
     padding: 0;
+    height: calc(var(--cell-h) - 2px);
+    line-height: 1;
+  }}
+  td input[type="date"] {{
+    height: calc(var(--cell-h) - 2px);
+    line-height: 1;
   }}
   td select:hover {{ background: #e8f0fe; }}
   td select:focus {{ background: #d2e3fc; box-shadow: inset 0 0 0 2px #4285f4; }}
@@ -270,6 +310,7 @@ html = f"""<!DOCTYPE html>
     width: var(--cal-w);
     padding: 0;
     position: relative;
+    border-right: 1px solid #e8e8e8;
   }}
 
   td.cal.we {{ background: var(--weekend-bg); }}
@@ -492,6 +533,10 @@ html = f"""<!DOCTYPE html>
   </div>
 </div>
 
+<div class="filter-bar" id="filter-bar">
+  <span style="font-weight:600;font-size:12px;color:#555">Filter by Project:</span>
+</div>
+
 <div class="gantt-wrapper" id="gantt-wrapper">
   <svg id="dep-svg"></svg>
   <table id="gantt-table">
@@ -512,7 +557,7 @@ html = f"""<!DOCTYPE html>
 <div class="priorities-section" id="priorities-section">
   <h2>Current Priorities</h2>
   <table class="prio-table" id="prio-table">
-    <thead><tr><th>Owner</th><th>Current Task</th><th>Person(s)</th><th>ID</th><th>Priority</th><th>Start</th><th>Days Left</th><th>Category</th></tr></thead>
+    <thead><tr><th>Owner</th><th>Current Task</th><th>ID</th><th>Priority</th><th>End</th><th>Days Left</th><th>Category</th></tr></thead>
     <tbody id="prio-body"></tbody>
   </table>
 </div>
@@ -525,8 +570,8 @@ html = f"""<!DOCTYPE html>
 // ═══════════════════════════════════════════════════════════════════
 const DATA = {data_json};
 
-// Number of fixed columns before calendar: ID, Task, Owner, Person, Start, Days, Effort, Prio, Deps, Status
-const DATA_COLS = 10;
+// Number of fixed columns before calendar: Del, ID, Task, Project, System, Owner, End, Days, Prio, Deps, Status
+const DATA_COLS = 11;
 
 // ═══════════════════════════════════════════════════════════════════
 // Helpers
@@ -590,6 +635,11 @@ const todayOffset = daysBetween(calStart, today);
 const rowMap = new Map(); // id -> tr element
 
 // ═══════════════════════════════════════════════════════════════════
+// Project filter state
+// ═══════════════════════════════════════════════════════════════════
+let activeProjectFilter = null; // null = show all
+
+// ═══════════════════════════════════════════════════════════════════
 // Render
 // ═══════════════════════════════════════════════════════════════════
 function render() {{
@@ -599,6 +649,8 @@ function render() {{
   renderLegend();
   renderWorkload();
   renderCurrentPriorities();
+  renderFilterBar();
+  applyFilter();
   drawLines();
   drawDependencies();
 }}
@@ -606,6 +658,25 @@ function render() {{
 function renderHead() {{
   const thead = document.getElementById('gantt-head');
   thead.innerHTML = '';
+
+  // Colgroup for fixed table layout
+  const table = document.getElementById('gantt-table');
+  let cg = table.querySelector('colgroup');
+  if (cg) cg.remove();
+  cg = document.createElement('colgroup');
+  // Data column widths: Del(28), ID(44), Task(280), Project(90), System(120), Owner(90), End(100), Days(40), Prio(45), Deps(85), Status(80)
+  const dataWidths = [28, 44, 280, 90, 120, 90, 100, 40, 45, 85, 80];
+  dataWidths.forEach(w => {{
+    const col = document.createElement('col');
+    col.style.width = w + 'px';
+    cg.appendChild(col);
+  }});
+  for (let d = 0; d < numDays; d++) {{
+    const col = document.createElement('col');
+    col.style.width = 'var(--cal-w)';
+    cg.appendChild(col);
+  }}
+  table.insertBefore(cg, thead);
 
   // Month row
   const mrow = document.createElement('tr');
@@ -632,9 +703,10 @@ function renderHead() {{
 
   // Column headers
   const hrow = document.createElement('tr');
-  ['ID', 'Task', 'Owner', 'Person(s)', 'Start', 'Days', 'Effort', 'Prio.', 'Deps', 'Status'].forEach(h => {{
+  ['', 'ID', 'Task', 'Project', 'System', 'Owner', 'End', 'Days', 'Prio.', 'Deps', 'Status'].forEach(h => {{
     const th = document.createElement('th');
     th.textContent = h;
+    if (h === '') th.style.minWidth = '28px';
     hrow.appendChild(th);
   }});
 
@@ -663,13 +735,30 @@ function renderBody() {{
     crow.className = 'cat-row';
     const clabel = document.createElement('td');
     clabel.colSpan = DATA_COLS + numDays;
-    clabel.innerHTML = `<span class="cat-swatch" style="background:${{color || '#ccc'}}"></span>${{cat}}`;
+    clabel.innerHTML = `<span class="cat-swatch" style="background:${{color || '#ccc'}}"></span>${{cat}}<button class="add-task-btn" onclick="addTask('${{cat}}')">+ Add Task</button>`;
     crow.appendChild(clabel);
     tbody.appendChild(crow);
 
     // Task rows
-    group.items.forEach((item) => {{
+    group.items.forEach((item, itemIdx) => {{
       const tr = document.createElement('tr');
+
+      // 0. Delete button
+      const tdDel = document.createElement('td');
+      tdDel.className = 'del';
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del-btn';
+      delBtn.innerHTML = '&#x2715;';
+      delBtn.title = 'Remove task';
+      delBtn.addEventListener('click', () => {{
+        if (confirm(`Remove task ${{item.id || ''}} "${{item.task}}"?`)) {{
+          group.items.splice(itemIdx, 1);
+          saveLocal();
+          render();
+        }}
+      }});
+      tdDel.appendChild(delBtn);
+      tr.appendChild(tdDel);
 
       // 1. ID (read-only)
       const tdId = document.createElement('td');
@@ -685,7 +774,38 @@ function renderBody() {{
       tdTask.addEventListener('blur', () => {{ item.task = tdTask.textContent.trim(); saveLocal(); }});
       tr.appendChild(tdTask);
 
-      // 3. Owner (dropdown single-select)
+      // 3. Project (dropdown)
+      const tdProject = document.createElement('td');
+      tdProject.className = 'project';
+      const selProject = document.createElement('select');
+      const projectOpts = [''].concat(DATA.projects || []);
+      selProject.innerHTML = projectOpts.map(p =>
+        `<option value="${{p}}" ${{p===(item.project||'')?'selected':''}}>${{p || '\u2014'}}</option>`
+      ).join('');
+      selProject.addEventListener('change', () => {{
+        item.project = selProject.value;
+        saveLocal();
+        applyFilter();
+      }});
+      tdProject.appendChild(selProject);
+      tr.appendChild(tdProject);
+
+      // 4. System Level (dropdown)
+      const tdSys = document.createElement('td');
+      tdSys.className = 'system-level';
+      const selSys = document.createElement('select');
+      const sysOpts = [''].concat(DATA.system_levels || []);
+      selSys.innerHTML = sysOpts.map(s =>
+        `<option value="${{s}}" ${{s===(item.system_level||'')?'selected':''}}>${{s || '\u2014'}}</option>`
+      ).join('');
+      selSys.addEventListener('change', () => {{
+        item.system_level = selSys.value;
+        saveLocal();
+      }});
+      tdSys.appendChild(selSys);
+      tr.appendChild(tdSys);
+
+      // 5. Owner (dropdown single-select)
       const tdOwner = document.createElement('td');
       tdOwner.className = 'owner';
       const selOwner = document.createElement('select');
@@ -693,44 +813,52 @@ function renderBody() {{
       selOwner.innerHTML = ownerOpts.map(p =>
         `<option value="${{p}}" ${{p===(item.owner||'')?'selected':''}}>${{p || '\u2014'}}</option>`
       ).join('');
+      function updateOwnerStyle() {{
+        tdOwner.classList.toggle('owner-required', !selOwner.value);
+      }}
       selOwner.addEventListener('change', () => {{
         item.owner = selOwner.value;
+        updateOwnerStyle();
         saveLocal();
         renderCurrentPriorities();
       }});
+      updateOwnerStyle();
       tdOwner.appendChild(selOwner);
       tr.appendChild(tdOwner);
 
-      // 4. Person(s) (multi-select)
-      const tdPerson = document.createElement('td');
-      tdPerson.className = 'person';
-      buildMultiSelect(tdPerson, DATA.people, getPersonArray(item), (sel) => {{
-        item.person = sel;
-        saveLocal();
-        renderWorkload();
-        renderCurrentPriorities();
-      }});
-      tr.appendChild(tdPerson);
+      // 6. Person(s) — currently hidden
+      // const tdPerson = document.createElement('td');
+      // tdPerson.className = 'person';
+      // buildMultiSelect(tdPerson, DATA.people, getPersonArray(item), (sel) => {{
+      //   item.person = sel;
+      //   saveLocal();
+      //   renderWorkload();
+      //   renderCurrentPriorities();
+      // }});
+      // tr.appendChild(tdPerson);
 
-      // 5. Start date (editable)
-      const tdStart = document.createElement('td');
-      tdStart.className = 'date';
-      tdStart.contentEditable = 'true';
-      tdStart.textContent = item.start;
-      tdStart.addEventListener('blur', () => {{
-        const val = tdStart.textContent.trim();
-        if (/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(val)) {{
-          item.start = val;
+      // 7. End date (date picker)
+      const tdEnd = document.createElement('td');
+      tdEnd.className = 'date';
+      const inpEnd = document.createElement('input');
+      inpEnd.type = 'date';
+      inpEnd.value = item.end || '';
+      inpEnd.style.cssText = 'border:none;background:transparent;font:inherit;text-align:center;cursor:pointer;outline:none;width:100%;padding:0;font-family:monospace;font-size:11px;';
+      inpEnd.addEventListener('change', () => {{
+        const val = inpEnd.value;
+        if (val) {{
+          item.end = val;
           renderCalRow(tr, item, cat, color);
           saveLocal();
           drawDependencies();
-        }} else {{
-          tdStart.textContent = item.start;
+          renderWorkload();
+          renderCurrentPriorities();
         }}
       }});
-      tr.appendChild(tdStart);
+      tdEnd.appendChild(inpEnd);
+      tr.appendChild(tdEnd);
 
-      // 6. Days (editable)
+      // 8. Days (editable)
       const tdDays = document.createElement('td');
       tdDays.className = 'days';
       tdDays.contentEditable = 'true';
@@ -749,18 +877,7 @@ function renderBody() {{
       }});
       tr.appendChild(tdDays);
 
-      // 7. Effort (dropdown)
-      const tdEffort = document.createElement('td');
-      tdEffort.className = 'effort';
-      const selEffort = document.createElement('select');
-      selEffort.innerHTML = ['S','M','L'].map(v =>
-        `<option value="${{v}}" ${{v===item.effort?'selected':''}}>${{v}}</option>`
-      ).join('');
-      selEffort.addEventListener('change', () => {{ item.effort = selEffort.value; saveLocal(); }});
-      tdEffort.appendChild(selEffort);
-      tr.appendChild(tdEffort);
-
-      // 8. Priority (dropdown: H=red, M=yellow, L=green)
+      // 9. Priority (dropdown: H=red, M=yellow, L=green)
       const tdPrio = document.createElement('td');
       const selPrio = document.createElement('select');
       selPrio.innerHTML = ['H','M','L'].map(v =>
@@ -784,7 +901,7 @@ function renderBody() {{
       tr.appendChild(tdPrio);
       updatePrioStyle();
 
-      // 9. Dependencies (multi-select of task IDs)
+      // 10. Dependencies (multi-select of task IDs)
       const tdDeps = document.createElement('td');
       tdDeps.className = 'deps';
       const otherIds = allTaskIds().filter(id => id !== item.id);
@@ -795,7 +912,7 @@ function renderBody() {{
       }});
       tr.appendChild(tdDeps);
 
-      // 10. Status (dropdown)
+      // 11. Status (dropdown)
       const tdStatus = document.createElement('td');
       const selStatus = document.createElement('select');
       const statusOpts = [
@@ -878,31 +995,44 @@ document.addEventListener('click', () => {{
 }});
 
 // ═══════════════════════════════════════════════════════════════════
-// Calendar bar rendering
+// Calendar bar rendering (bottom-up: end date - days = start)
 // ═══════════════════════════════════════════════════════════════════
 function renderCalRow(tr, item, cat, color) {{
   while (tr.children.length > DATA_COLS) tr.removeChild(tr.lastChild);
 
-  const startDt = parseDate(item.start);
-  const endDt = addDays(startDt, item.days);
-  const isDelivery = cat === 'Hardware Deliveries';
-  const waitColor = lighten(color);
+  const hasEnd = item.end && item.end.length >= 10 && item.days > 0;
 
-  for (let d = 0; d < numDays; d++) {{
-    const dt = addDays(calStart, d);
-    const td = document.createElement('td');
-    td.className = 'cal';
-    if (isWeekend(dt)) td.classList.add('we');
-    if (dt >= startDt && dt < endDt) {{
-      td.classList.add('bar');
-      const progress = daysBetween(startDt, dt) / item.days;
-      if (isDelivery && progress < 0.7) {{
-        td.style.background = waitColor;
-      }} else {{
-        td.style.background = color;
+  if (hasEnd) {{
+    const endDt = parseDate(item.end);
+    const startDt = addDays(endDt, -item.days);
+    const isDelivery = cat === 'Hardware Deliveries';
+    const waitColor = lighten(color);
+
+    for (let d = 0; d < numDays; d++) {{
+      const dt = addDays(calStart, d);
+      const td = document.createElement('td');
+      td.className = 'cal';
+      if (isWeekend(dt)) td.classList.add('we');
+      if (dt >= startDt && dt < endDt) {{
+        td.classList.add('bar');
+        const progress = daysBetween(startDt, dt) / item.days;
+        if (isDelivery && progress < 0.7) {{
+          td.style.background = waitColor;
+        }} else {{
+          td.style.background = color;
+        }}
       }}
+      tr.appendChild(td);
     }}
-    tr.appendChild(td);
+  }} else {{
+    // No valid date — render empty cells
+    for (let d = 0; d < numDays; d++) {{
+      const dt = addDays(calStart, d);
+      const td = document.createElement('td');
+      td.className = 'cal';
+      if (isWeekend(dt)) td.classList.add('we');
+      tr.appendChild(td);
+    }}
   }}
 }}
 
@@ -992,8 +1122,9 @@ function drawDependencies() {{
 }}
 
 function getBarEndX(item, headerCells, wrapperRect, wrapper) {{
-  const startDt = parseDate(item.start);
-  const endOffset = daysBetween(calStart, addDays(startDt, item.days)) - 1;
+  if (!item.end || !item.end.length) return null;
+  const endDt = parseDate(item.end);
+  const endOffset = daysBetween(calStart, endDt) - 1;
   const idx = DATA_COLS + endOffset;
   if (idx < 0 || idx >= headerCells.length) return null;
   const cell = headerCells[idx];
@@ -1002,7 +1133,9 @@ function getBarEndX(item, headerCells, wrapperRect, wrapper) {{
 }}
 
 function getBarStartX(item, headerCells, wrapperRect, wrapper) {{
-  const startDt = parseDate(item.start);
+  if (!item.end || !item.end.length) return null;
+  const endDt = parseDate(item.end);
+  const startDt = addDays(endDt, -item.days);
   const startOffset = daysBetween(calStart, startDt);
   const idx = DATA_COLS + startOffset;
   if (idx < 0 || idx >= headerCells.length) return null;
@@ -1147,15 +1280,15 @@ function renderCurrentPriorities() {{
     group.items.forEach(item => {{
       const status = item.status || 'on-track';
       if (status === 'done' || status === 'not-needed') return;
-      const persons = getPersonArray(item);
-      const startDt = parseDate(item.start);
-      const endDt = addDays(startDt, item.days);
+      if (!item.end || !item.end.length || !item.days) return; // skip tasks without dates
+      const owner = item.owner || '';
+      if (!owner) return; // skip tasks without an owner
+      const endDt = parseDate(item.end);
+      const startDt = addDays(endDt, -item.days);
       // Include tasks that are currently active or upcoming (not yet ended)
       if (endDt <= now && status !== 'delayed') return;
-      persons.forEach(p => {{
-        if (!personTasks[p]) personTasks[p] = [];
-        personTasks[p].push({{ ...item, _category: group.category, _startDt: startDt, _endDt: endDt }});
-      }});
+      if (!personTasks[owner]) personTasks[owner] = [];
+      personTasks[owner].push({{ ...item, _category: group.category, _startDt: startDt, _endDt: endDt }});
     }});
   }});
 
@@ -1164,7 +1297,7 @@ function renderCurrentPriorities() {{
     const tasks = personTasks[person] || [];
     if (!tasks.length) {{
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td style="font-weight:600">${{person}}</td><td colspan="7" style="color:#999;font-style:italic">No active tasks</td>`;
+      tr.innerHTML = `<td style="font-weight:600">${{person}}</td><td colspan="6" style="color:#999;font-style:italic">No active tasks</td>`;
       tbody.appendChild(tr);
       return;
     }}
@@ -1184,15 +1317,13 @@ function renderCurrentPriorities() {{
       const colors = prioColors[prio] || ['transparent', '#333'];
       const daysLeft = Math.max(0, daysBetween(now, task._endDt));
       const isActive = task._startDt <= now;
-      const allPersons = getPersonArray(task).join(', ');
 
       tr.innerHTML = `
         <td style="font-weight:${{idx === 0 ? '700' : '400'}}">${{idx === 0 ? person : ''}}</td>
         <td style="${{idx === 0 ? 'font-weight:600' : 'color:#666'}}">${{task.task}}</td>
-        <td style="text-align:center;font-size:11px;color:#555">${{allPersons}}</td>
         <td style="text-align:center;font-family:monospace;font-size:10px;color:#888">${{task.id || ''}}</td>
         <td style="text-align:center"><span class="prio-badge" style="background:${{colors[0]}};color:${{colors[1]}}">${{prio}}</span></td>
-        <td style="font-family:monospace;font-size:11px">${{task.start}}</td>
+        <td style="font-family:monospace;font-size:11px">${{task.end}}</td>
         <td style="text-align:center">${{isActive ? daysLeft + 'd remaining' : 'starts in ' + daysBetween(now, task._startDt) + 'd'}}</td>
         <td style="font-size:11px;color:#666">${{task._category}}</td>
       `;
@@ -1201,10 +1332,97 @@ function renderCurrentPriorities() {{
 
     if (tasks.length > 3) {{
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td></td><td colspan="7" style="color:#999;font-size:11px;font-style:italic">+ ${{tasks.length - 3}} more tasks</td>`;
+      tr.innerHTML = `<td></td><td colspan="6" style="color:#999;font-size:11px;font-style:italic">+ ${{tasks.length - 3}} more tasks</td>`;
       tbody.appendChild(tr);
     }}
   }});
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Project filter
+// ═══════════════════════════════════════════════════════════════════
+function renderFilterBar() {{
+  const bar = document.getElementById('filter-bar');
+  // Keep the label span, clear the rest
+  while (bar.children.length > 1) bar.removeChild(bar.lastChild);
+
+  // "All" button
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn' + (activeProjectFilter === null ? ' active' : '');
+  allBtn.textContent = 'All';
+  allBtn.addEventListener('click', () => {{ activeProjectFilter = null; applyFilter(); renderFilterBar(); }});
+  bar.appendChild(allBtn);
+
+  // Per-project buttons
+  (DATA.projects || []).forEach(proj => {{
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (activeProjectFilter === proj ? ' active' : '');
+    btn.textContent = proj;
+    btn.addEventListener('click', () => {{ activeProjectFilter = proj; applyFilter(); renderFilterBar(); }});
+    bar.appendChild(btn);
+  }});
+
+  // "Unassigned" button
+  const naBtn = document.createElement('button');
+  naBtn.className = 'filter-btn' + (activeProjectFilter === '' ? ' active' : '');
+  naBtn.textContent = 'Unassigned';
+  naBtn.addEventListener('click', () => {{ activeProjectFilter = ''; applyFilter(); renderFilterBar(); }});
+  bar.appendChild(naBtn);
+}}
+
+function applyFilter() {{
+  const tbody = document.getElementById('gantt-body');
+  const rows = tbody.querySelectorAll('tr');
+  const taskMap = buildTaskMap();
+  rows.forEach(tr => {{
+    if (tr.classList.contains('cat-row')) return; // always show category headers
+    const taskId = tr.querySelector('.task-id');
+    if (!taskId) return;
+    const id = taskId.textContent;
+    const item = taskMap[id];
+    if (!item) return;
+    if (activeProjectFilter === null) {{
+      tr.classList.remove('filtered-out');
+    }} else if (activeProjectFilter === '') {{
+      tr.classList.toggle('filtered-out', !!item.project);
+    }} else {{
+      tr.classList.toggle('filtered-out', item.project !== activeProjectFilter);
+    }}
+  }});
+  drawDependencies();
+}}
+
+// ═══════════════════════════════════════════════════════════════════
+// Add / Remove tasks
+// ═══════════════════════════════════════════════════════════════════
+function nextTaskId() {{
+  let max = 0;
+  DATA.tasks.forEach(g => g.items.forEach(it => {{
+    const m = (it.id || '').match(/^T(\d+)$/);
+    if (m) max = Math.max(max, parseInt(m[1]));
+  }}));
+  return 'T' + (max + 1);
+}}
+
+function addTask(categoryName) {{
+  const group = DATA.tasks.find(g => g.category === categoryName);
+  if (!group) return;
+  const newItem = {{
+    id: nextTaskId(),
+    task: 'New task',
+    person: [],
+    end: fmtDate(addDays(today, 7)),
+    days: 5,
+    priority: 'M',
+    depends_on: [],
+    status: 'on-track',
+    owner: '',
+    system_level: '',
+    project: ''
+  }};
+  group.items.push(newItem);
+  saveLocal();
+  render();
 }}
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1219,7 +1437,6 @@ function renderLegend() {{
   (deliveryColor ? `<div class="legend-item"><div class="legend-swatch" style="background:${{lighten(deliveryColor)}}"></div>Delivery waiting</div>` : '');
 
   document.getElementById('info').innerHTML =
-    '<strong>Effort:</strong> S = Small (&frac12;day) &middot; M = Medium (1-3d) &middot; L = Large (week+)<br>' +
     '<strong>Priority:</strong> H = High (urgent, red) &middot; M = Medium &middot; L = Low (green)';
 
   const ll = document.getElementById('lines-legend');
@@ -1251,6 +1468,8 @@ function loadLocal() {{
     if (parsed.tasks) DATA.tasks = parsed.tasks;
     if (parsed.title) DATA.title = parsed.title;
     if (parsed.milestones) DATA.milestones = parsed.milestones;
+    if (parsed.projects) DATA.projects = parsed.projects;
+    if (parsed.system_levels) DATA.system_levels = parsed.system_levels;
   }} catch(e) {{ /* ignore corrupted data */ }}
 }}
 
@@ -1326,4 +1545,4 @@ with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
 
 print(f"Generated: {OUTPUT_FILE}")
 print(f"Tasks: {sum(len(g['items']) for g in data['tasks'])}")
-print(f"Features: inline editing, multi-person dropdowns, dependency arrows, workload summary, save to file")
+print(f"Features: inline editing, multi-person dropdowns, dependency arrows, workload summary, project filter, save to file")

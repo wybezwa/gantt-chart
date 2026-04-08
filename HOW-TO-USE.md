@@ -12,13 +12,29 @@ All editing happens inline — click any cell to modify it.
 |--------|------------|-------------|
 | **ID** | Read-only | Auto-assigned task identifier (T1, T2, ...) |
 | **Task** | Click to type | Task name or description |
-| **Person(s)** | Click → checkboxes | Assign one or more people to a task |
-| **Start** | Click to type | Start date in `YYYY-MM-DD` format |
-| **Days** | Click to type | Duration in calendar days |
-| **Effort** | Dropdown | S = Small (½ day), M = Medium (1–3 days), L = Large (week+) |
+| **Project** | Dropdown | Classify by project: Spark, BB1-V2, etc. Used with the project filter |
+| **System** | Dropdown | System level: Total system, Mechanical system, Harvester controller system, EWS-B |
+| **Owner** | Dropdown | Required — task owner. Highlighted yellow when empty |
+| **Person(s)** | Click → checkboxes | Optional — assign one or more people to a task |
+| **End** | Click to type | End (deadline) date in `YYYY-MM-DD` format. The bar is drawn backwards from this date |
+| **Days** | Click to type | Duration in calendar days. Bar starts at End − Days |
 | **Prio.** | Dropdown | Priority: H = High (red), M = Medium (yellow), L = Low (green) |
 | **Deps** | Click → checkboxes | Select predecessor tasks by ID. Arrows show dependencies on the chart |
 | **Status** | Dropdown | On Track (green), Delayed (red), Done (blue), Not Needed (grey) |
+
+## Scheduling Approach
+
+The chart uses **bottom-up scheduling**: you set the **End date** (deadline) and the number of **Days** needed. The task bar is drawn backwards from the end date. This means:
+- End date = when the task must be finished
+- Days = how long the task takes
+- Start = automatically calculated as End − Days
+
+## Project Filter
+
+Above the chart, a **Filter by Project** bar lets you show:
+- **All** — all tasks regardless of project
+- **Spark** / **BB1-V2** — only tasks assigned to that project
+- **Unassigned** — tasks without a project classification
 
 ## Status Effects
 
@@ -51,6 +67,10 @@ Below the chart you'll find a **Workload Summary** showing each person's load:
 - For multi-person tasks, the load is split equally
 - Bars colored from green (low load) to red (high load)
 - Shows task count and total days per person
+
+## Owner Validation
+
+The **Owner** field is required. Tasks without an owner are highlighted with a yellow background to prompt you to assign someone.
 
 ## Current Priorities
 

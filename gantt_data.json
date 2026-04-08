@@ -14,7 +14,9 @@
   "people": [
     "Camilo",
     "Ernst",
-    "Nathan",
+    "Matthijs",
+    "Mathijs",
+    "Niels",
     "Sander",
     "Thijs",
     "Wybe"
@@ -32,45 +34,52 @@
       "items": [
         {
           "id": "T1",
-          "task": "Confirmed controller path (decision)",
+          "task": "Confirmed controller path (decision document)",
           "person": [
-            "Sander"
+            "Camilo"
           ],
-          "start": "2026-04-06",
-          "days": 5,
-          "effort": "M",
+          "days": 2,
           "priority": "H",
           "depends_on": [],
           "status": "on-track",
-          "owner": "Sander"
+          "owner": "Wybe",
+          "project": "BB1-XX",
+          "system_level": "Harvester controller system",
+          "end": "2026-04-15"
         },
         {
           "id": "T2",
           "task": "Initial controller architecture",
           "person": [
-            "Sander"
+            "Camilo"
           ],
-          "start": "2026-04-13",
-          "days": 5,
-          "effort": "L",
+          "days": 10,
           "priority": "M",
-          "depends_on": [],
+          "depends_on": [
+            "T1"
+          ],
           "status": "on-track",
-          "owner": "Sander"
+          "owner": "Wybe",
+          "project": "BB1-XX",
+          "system_level": "Harvester controller system",
+          "end": "2026-04-19"
         },
         {
           "id": "T3",
           "task": "Spark basic system design",
           "person": [
-            "Sander"
+            "Ernst",
+            "Sander",
+            "Wybe"
           ],
-          "start": "2026-04-20",
-          "days": 5,
-          "effort": "L",
-          "priority": "M",
+          "days": 10,
+          "priority": "H",
           "depends_on": [],
           "status": "on-track",
-          "owner": "Sander"
+          "owner": "Sander",
+          "project": "Spark",
+          "system_level": "Total system",
+          "end": "2026-04-24"
         },
         {
           "id": "T4",
@@ -78,53 +87,98 @@
           "person": [
             "Sander"
           ],
-          "start": "2026-04-20",
-          "days": 5,
-          "effort": "M",
-          "priority": "H",
+          "days": 10,
+          "priority": "M",
           "depends_on": [],
           "status": "on-track",
-          "owner": "Sander"
+          "project": "Spark",
+          "system_level": "Mechanical system",
+          "owner": "Sander",
+          "end": "2026-04-19"
         },
         {
           "id": "T5",
           "task": "Spark critical parts finalised",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-04-27",
+          "person": [],
           "days": 5,
-          "effort": "M",
-          "priority": "M",
-          "depends_on": [],
-          "status": "on-track",
-          "owner": "Sander"
-        },
-        {
-          "id": "T6",
-          "task": "EWS dashboard requirements defined",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-04-27",
-          "days": 5,
-          "effort": "S",
           "priority": "H",
           "depends_on": [],
-          "owner": "Sander"
+          "status": "on-track",
+          "project": "Spark",
+          "system_level": "Total system",
+          "owner": "Sander",
+          "end": "2026-05-01"
         },
         {
           "id": "T7",
           "task": "Total system validation planning",
+          "person": [],
+          "days": 5,
+          "priority": "M",
+          "depends_on": [],
+          "project": "Spark",
+          "system_level": "Total system",
+          "owner": "Sander",
+          "end": "2026-05-15",
+          "status": "on-track"
+        },
+        {
+          "id": "T12",
+          "task": "BB improvement list & quick studies",
           "person": [
             "Sander"
           ],
-          "start": "2026-05-11",
           "days": 5,
-          "effort": "M",
           "priority": "H",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "2026-04-11",
+          "system_level": "Total system",
+          "project": "BB1-XX",
+          "owner": "",
+          "status": "on-track"
+        },
+        {
+          "id": "T34",
+          "task": "Detailed design Spark ready and ordered",
+          "person": [
+            "Sander"
+          ],
+          "end": "2026-05-08",
+          "days": 5,
+          "priority": "H",
+          "depends_on": [],
+          "status": "on-track",
+          "owner": "Sander",
+          "system_level": "Mechanical system",
+          "project": "Spark"
+        },
+        {
+          "id": "T35",
+          "task": "EEC design finished and ordered",
+          "person": [
+            "Mathijs"
+          ],
+          "end": "2026-04-17",
+          "days": 5,
+          "priority": "M",
+          "depends_on": [],
+          "status": "on-track",
+          "owner": "Mathijs",
+          "system_level": "",
+          "project": ""
+        },
+        {
+          "id": "T36",
+          "task": "Main architecture EWS + Spark",
+          "person": [],
+          "end": "2026-05-01",
+          "days": 10,
+          "priority": "M",
+          "depends_on": [],
+          "status": "on-track",
+          "owner": "",
+          "system_level": "Total system",
+          "project": "Spark"
         }
       ]
     },
@@ -134,17 +188,15 @@
         {
           "id": "T8",
           "task": "MBD board (ordered → delivered)",
-          "person": [
-            "Camilo",
-            "Ernst",
-            "Nathan"
-          ],
-          "start": "2026-03-25",
-          "days": 10,
-          "effort": "S",
-          "priority": "H",
+          "person": [],
+          "days": 14,
+          "priority": "M",
           "depends_on": [],
-          "owner": "Camilo"
+          "end": "2026-04-08",
+          "system_level": "",
+          "project": "",
+          "owner": "Mathijs",
+          "status": "done"
         },
         {
           "id": "T9",
@@ -152,25 +204,27 @@
           "person": [
             "Sander"
           ],
-          "start": "2026-03-28",
           "days": 14,
-          "effort": "S",
           "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "2026-04-08",
+          "system_level": "",
+          "project": "",
+          "owner": "Mathijs",
+          "status": "done"
         },
         {
           "id": "T10",
           "task": "EEC board (ordered → delivered)",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-04-13",
-          "days": 15,
-          "effort": "S",
+          "person": [],
+          "days": 14,
           "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "2026-05-01",
+          "system_level": "",
+          "project": "",
+          "owner": "Mathijs",
+          "status": "on-track"
         },
         {
           "id": "T11",
@@ -178,56 +232,32 @@
           "person": [
             "Sander"
           ],
-          "start": "2026-04-29",
-          "days": 17,
-          "effort": "S",
-          "priority": "M",
-          "depends_on": [],
-          "owner": "Sander"
-        }
-      ]
-    },
-    {
-      "category": "Firmware & Software",
-      "items": [
-        {
-          "id": "T12",
-          "task": "BB improvement list & quick studies",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-04-06",
-          "days": 5,
-          "effort": "M",
+          "days": 21,
           "priority": "H",
-          "depends_on": [],
-          "owner": "Sander"
+          "depends_on": [
+            "T34"
+          ],
+          "end": "2026-05-20",
+          "system_level": "Total system",
+          "project": "Spark",
+          "owner": "Sander",
+          "status": "on-track"
         },
         {
-          "id": "T13",
-          "task": "First firmware for MB validation",
+          "id": "T39",
+          "task": "BB1-V3 order parts (ordered → delivered)",
           "person": [
-            "Sander"
+            "Ernst",
+            "Wybe"
           ],
-          "start": "2026-04-13",
-          "days": 5,
-          "effort": "L",
+          "end": "2026-05-20",
+          "days": 21,
           "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
-        },
-        {
-          "id": "T14",
-          "task": "More firmware ready",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-04-27",
-          "days": 5,
-          "effort": "M",
-          "priority": "M",
-          "depends_on": [],
-          "owner": "Sander"
+          "status": "on-track",
+          "owner": "Sander",
+          "system_level": "Mechanical system",
+          "project": "BB1-XX"
         }
       ]
     },
@@ -238,30 +268,63 @@
           "id": "T15",
           "task": "BB-1V2 assembly (DC motor)",
           "person": [
-            "Sander",
-            "Wybe"
+            "Sander"
           ],
-          "start": "2026-03-30",
           "days": 5,
-          "effort": "M",
           "priority": "H",
           "depends_on": [],
-          "owner": "Sander"
+          "project": "BB1-XX",
+          "system_level": "Mechanical system",
+          "end": "2026-04-03",
+          "owner": "Ernst",
+          "status": "done"
         },
         {
           "id": "T16",
-          "task": "Spark assembly",
+          "task": "Initial mechanical Spark assembly",
           "person": [
             "Sander"
           ],
-          "start": "2026-05-18",
           "days": 5,
-          "effort": "L",
           "priority": "M",
           "depends_on": [
             "T11"
           ],
-          "owner": "Sander"
+          "project": "Spark",
+          "system_level": "Mechanical system",
+          "owner": "Ernst",
+          "end": "2026-05-22",
+          "status": "on-track"
+        },
+        {
+          "id": "T37",
+          "task": "Total integrated Spark assembly",
+          "person": [
+            "Sander"
+          ],
+          "end": "2026-05-27",
+          "days": 5,
+          "priority": "M",
+          "depends_on": [],
+          "status": "on-track",
+          "owner": "Sander",
+          "system_level": "Total system",
+          "project": "Spark"
+        },
+        {
+          "id": "T38",
+          "task": "BB1-V3 assembly",
+          "person": [
+            "Ernst"
+          ],
+          "end": "2026-04-24",
+          "days": 3,
+          "priority": "M",
+          "depends_on": [],
+          "status": "on-track",
+          "owner": "Ernst",
+          "system_level": "Mechanical system",
+          "project": "BB1-XX"
         }
       ]
     },
@@ -271,243 +334,272 @@
         {
           "id": "T17",
           "task": "BB-1V2 full system validation (EH+EEC)",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-03-30",
-          "days": 5,
-          "effort": "M",
-          "priority": "H",
+          "person": [],
+          "days": 0,
+          "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T18",
           "task": "MBD actuator testing",
-          "person": [
-            "Sander",
-            "Wybe"
-          ],
-          "start": "2026-03-30",
-          "days": 5,
-          "effort": "M",
-          "priority": "H",
+          "person": [],
+          "days": 0,
+          "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T19",
           "task": "EEC upgrade results evaluated",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-04-06",
-          "days": 5,
-          "effort": "S",
-          "priority": "H",
+          "person": [],
+          "days": 0,
+          "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T20",
           "task": "MB validation",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-04-13",
-          "days": 5,
-          "effort": "M",
+          "person": [],
+          "days": 0,
           "priority": "M",
-          "depends_on": [
-            "T9",
-            "T13"
-          ],
-          "owner": "Sander"
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T21",
           "task": "EEC validated",
-          "person": [
-            "Sander",
-            "Thijs"
-          ],
-          "start": "2026-05-04",
-          "days": 5,
-          "effort": "M",
+          "person": [],
+          "days": 0,
           "priority": "M",
-          "depends_on": [
-            "T10"
-          ],
-          "owner": "Sander"
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T22",
           "task": "First integrated test (ctrl+fw+EEC)",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-05-04",
-          "days": 5,
-          "effort": "L",
+          "person": [],
+          "days": 0,
           "priority": "M",
-          "depends_on": [
-            "T21",
-            "T14"
-          ],
-          "owner": "Sander"
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T23",
           "task": "First EWS-BEH power measurement test",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-05-04",
-          "days": 5,
-          "effort": "M",
+          "person": [],
+          "days": 0,
           "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T24",
           "task": "Controller continued testing",
-          "person": [
-            "Sander",
-            "Wybe"
-          ],
-          "start": "2026-05-11",
-          "days": 5,
-          "effort": "M",
-          "priority": "H",
-          "depends_on": [
-            "T22"
-          ],
-          "owner": "Sander"
+          "person": [],
+          "days": 0,
+          "priority": "M",
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T25",
           "task": "First data dashboard testing",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-05-11",
-          "days": 5,
-          "effort": "M",
+          "person": [],
+          "days": 0,
           "priority": "M",
-          "depends_on": [
-            "T6"
-          ],
-          "owner": "Sander"
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T26",
           "task": "Delay buffer (controller)",
-          "person": [
-            "Sander",
-            "Thijs"
-          ],
-          "start": "2026-05-11",
-          "days": 5,
-          "effort": "S",
-          "priority": "H",
+          "person": [],
+          "days": 0,
+          "priority": "M",
           "depends_on": [],
-          "owner": "Sander"
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T27",
           "task": "Spark first mechanical testing",
-          "person": [
-            "Sander",
-            "Thijs"
-          ],
-          "start": "2026-05-18",
-          "days": 5,
-          "effort": "M",
+          "person": [],
+          "days": 0,
           "priority": "M",
-          "depends_on": [
-            "T16"
-          ],
-          "owner": "Sander"
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T28",
           "task": "First Spark + Controller system test",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-05-18",
-          "days": 5,
-          "effort": "L",
-          "priority": "L",
-          "depends_on": [
-            "T27",
-            "T24"
-          ],
-          "owner": "Sander"
+          "person": [],
+          "days": 0,
+          "priority": "M",
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T29",
           "task": "Further Spark mechanical testing",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-05-25",
-          "days": 5,
-          "effort": "M",
+          "person": [],
+          "days": 0,
           "priority": "M",
-          "depends_on": [
-            "T27"
-          ],
-          "owner": "Sander"
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T30",
           "task": "Full integrated test (Mech+EEC+Ctrl)",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-05-25",
-          "days": 5,
-          "effort": "L",
-          "priority": "L",
-          "depends_on": [
-            "T28"
-          ],
-          "owner": "Sander"
+          "person": [],
+          "days": 0,
+          "priority": "M",
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T31",
           "task": "Final total system test + endurance",
-          "person": [
-            "Sander"
-          ],
-          "start": "2026-05-25",
-          "days": 5,
-          "effort": "L",
-          "priority": "L",
-          "depends_on": [
-            "T30"
-          ],
-          "owner": "Sander"
+          "person": [],
+          "days": 0,
+          "priority": "M",
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
         },
         {
           "id": "T32",
           "task": "Full system test with EWS-B + server",
+          "person": [],
+          "days": 0,
+          "priority": "M",
+          "depends_on": [],
+          "end": "",
+          "system_level": "",
+          "project": "",
+          "owner": "",
+          "status": "on-track"
+        }
+      ]
+    },
+    {
+      "category": "Firmware & Software",
+      "items": [
+        {
+          "id": "T13",
+          "task": "First firmware for MB validation",
+          "person": [
+            "Niels"
+          ],
+          "days": 5,
+          "priority": "M",
+          "depends_on": [],
+          "project": "Spark",
+          "system_level": "Harvester controller system",
+          "owner": "Niels",
+          "end": "2026-04-17",
+          "status": "on-track"
+        },
+        {
+          "id": "T14",
+          "task": "Detailed controller firmware ready to test",
           "person": [
             "Sander"
           ],
-          "start": "2026-05-25",
           "days": 5,
-          "effort": "L",
-          "priority": "L",
-          "depends_on": [
-            "T30",
-            "T25"
+          "priority": "M",
+          "depends_on": [],
+          "project": "Spark",
+          "system_level": "Harvester controller system",
+          "owner": "Niels",
+          "end": "2026-05-01",
+          "status": "on-track"
+        },
+        {
+          "id": "T6",
+          "task": "EWS dashboard requirements defined",
+          "person": [
+            "Thijs"
           ],
-          "owner": "Sander"
+          "days": 5,
+          "priority": "M",
+          "depends_on": [],
+          "project": "Spark",
+          "system_level": "EWS-B",
+          "owner": "Thijs",
+          "end": "2026-05-01",
+          "status": "on-track"
         }
       ]
     }
+  ],
+  "system_levels": [
+    "Total system",
+    "Mechanical system",
+    "Harvester controller system",
+    "EWS-B"
+  ],
+  "projects": [
+    "Spark",
+    "BB1-XX"
   ]
 }
