@@ -253,7 +253,7 @@ html = f"""<!DOCTYPE html>
   td.date {{ min-width: 90px; text-align: center; font-size: 11px; font-family: monospace; }}
   td.days {{ min-width: 35px; text-align: center; font-size: 11px; }}
   td.prio {{ min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }}
-  td.deps {{ min-width: 80px; text-align: center; font-size: 10px; color: #555; position: relative; }}
+  td.deps {{ min-width: 80px; text-align: center; font-size: 10px; color: #555; position: relative; overflow: visible; }}
 
   td.status {{ min-width: 75px; text-align: center; font-size: 11px; font-weight: 600; }}
   td.status-on-track {{ background: #C6EFCE; color: #1a6b1a; }}
@@ -519,6 +519,34 @@ html = f"""<!DOCTYPE html>
     font-weight: 600;
     font-size: 11px;
   }}
+
+  /* Print / PDF export */
+  @media print {{
+    body {{ font-size: 9px; }}
+    .top-bar, .filter-bar, .legend, .info, .lines-legend,
+    #prio-section, .btn, .del-btn, .add-task-btn,
+    td.del {{ display: none !important; }}
+    .gantt-wrapper {{
+      overflow: visible !important;
+      border: none !important;
+      box-shadow: none !important;
+    }}
+    table {{ table-layout: fixed; width: max-content; }}
+    td, th {{ font-size: 8px !important; padding: 1px 2px !important; }}
+    td.cal {{ border-right: 1px solid #ddd !important; }}
+    td select, td input[type="date"] {{
+      -webkit-appearance: none;
+      appearance: none;
+      border: none !important;
+      background: transparent !important;
+      font-size: 8px !important;
+    }}
+    svg#dep-svg {{ display: none; }}
+    @page {{
+      size: landscape;
+      margin: 8mm;
+    }}
+  }}
 </style>
 </head>
 <body>
@@ -529,6 +557,7 @@ html = f"""<!DOCTYPE html>
     <button class="btn btn-save" onclick="saveToFile()" title="Save data to a file on disk">&#x1F4BE; Save to File</button>
     <button class="btn btn-export" onclick="downloadJSON()" title="Download current data as JSON">&#x2B07; Download JSON</button>
     <button class="btn" style="background:#888;color:#fff" onclick="resetLocal()" title="Discard browser edits and reload original data">&#x21BA; Reset</button>
+    <button class="btn" style="background:#5F6368;color:#fff" onclick="window.print()" title="Print or save as PDF">&#x1F5A8; Export PDF</button>
     <span class="save-status" id="save-status"></span>
   </div>
 </div>
@@ -1004,7 +1033,7 @@ function renderCalRow(tr, item, cat, color) {{
 
   if (hasEnd) {{
     const endDt = parseDate(item.end);
-    const startDt = addDays(endDt, -item.days);
+    const startDt = addDays(endDt, -item.days + 1);
     const isDelivery = cat === 'Hardware Deliveries';
     const waitColor = lighten(color);
 
@@ -1013,7 +1042,7 @@ function renderCalRow(tr, item, cat, color) {{
       const td = document.createElement('td');
       td.className = 'cal';
       if (isWeekend(dt)) td.classList.add('we');
-      if (dt >= startDt && dt < endDt) {{
+      if (dt >= startDt && dt <= endDt) {{
         td.classList.add('bar');
         const progress = daysBetween(startDt, dt) / item.days;
         if (isDelivery && progress < 0.7) {{
@@ -1124,7 +1153,7 @@ function drawDependencies() {{
 function getBarEndX(item, headerCells, wrapperRect, wrapper) {{
   if (!item.end || !item.end.length) return null;
   const endDt = parseDate(item.end);
-  const endOffset = daysBetween(calStart, endDt) - 1;
+  const endOffset = daysBetween(calStart, endDt);
   const idx = DATA_COLS + endOffset;
   if (idx < 0 || idx >= headerCells.length) return null;
   const cell = headerCells[idx];
@@ -1135,7 +1164,7 @@ function getBarEndX(item, headerCells, wrapperRect, wrapper) {{
 function getBarStartX(item, headerCells, wrapperRect, wrapper) {{
   if (!item.end || !item.end.length) return null;
   const endDt = parseDate(item.end);
-  const startDt = addDays(endDt, -item.days);
+  const startDt = addDays(endDt, -item.days + 1);
   const startOffset = daysBetween(calStart, startDt);
   const idx = DATA_COLS + startOffset;
   if (idx < 0 || idx >= headerCells.length) return null;
@@ -1284,7 +1313,7 @@ function renderCurrentPriorities() {{
       const owner = item.owner || '';
       if (!owner) return; // skip tasks without an owner
       const endDt = parseDate(item.end);
-      const startDt = addDays(endDt, -item.days);
+      const startDt = addDays(endDt, -item.days + 1);
       // Include tasks that are currently active or upcoming (not yet ended)
       if (endDt <= now && status !== 'delayed') return;
       if (!personTasks[owner]) personTasks[owner] = [];

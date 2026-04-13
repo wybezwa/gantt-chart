@@ -174,7 +174,7 @@
   td.date { min-width: 90px; text-align: center; font-size: 11px; font-family: monospace; }
   td.days { min-width: 35px; text-align: center; font-size: 11px; }
   td.prio { min-width: 40px; text-align: center; font-size: 11px; font-weight: 600; }
-  td.deps { min-width: 80px; text-align: center; font-size: 10px; color: #555; position: relative; }
+  td.deps { min-width: 80px; text-align: center; font-size: 10px; color: #555; position: relative; overflow: visible; }
 
   td.status { min-width: 75px; text-align: center; font-size: 11px; font-weight: 600; }
   td.status-on-track { background: #C6EFCE; color: #1a6b1a; }
@@ -440,6 +440,34 @@
     font-weight: 600;
     font-size: 11px;
   }
+
+  /* Print / PDF export */
+  @media print {
+    body { font-size: 9px; }
+    .top-bar, .filter-bar, .legend, .info, .lines-legend,
+    #prio-section, .btn, .del-btn, .add-task-btn,
+    td.del { display: none !important; }
+    .gantt-wrapper {
+      overflow: visible !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    table { table-layout: fixed; width: max-content; }
+    td, th { font-size: 8px !important; padding: 1px 2px !important; }
+    td.cal { border-right: 1px solid #ddd !important; }
+    td select, td input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+      border: none !important;
+      background: transparent !important;
+      font-size: 8px !important;
+    }
+    svg#dep-svg { display: none; }
+    @page {
+      size: landscape;
+      margin: 8mm;
+    }
+  }
 </style>
 </head>
 <body>
@@ -450,6 +478,7 @@
     <button class="btn btn-save" onclick="saveToFile()" title="Save data to a file on disk">&#x1F4BE; Save to File</button>
     <button class="btn btn-export" onclick="downloadJSON()" title="Download current data as JSON">&#x2B07; Download JSON</button>
     <button class="btn" style="background:#888;color:#fff" onclick="resetLocal()" title="Discard browser edits and reload original data">&#x21BA; Reset</button>
+    <button class="btn" style="background:#5F6368;color:#fff" onclick="window.print()" title="Print or save as PDF">&#x1F5A8; Export PDF</button>
     <span class="save-status" id="save-status"></span>
   </div>
 </div>
@@ -490,7 +519,7 @@
 // Gantt data (embedded from JSON)
 // ═══════════════════════════════════════════════════════════════════
 const DATA = {
-  "title": "Sander Roadmap — Next 2 Months (W14–W22)",
+  "title": "2 month roadmap",
   "calendar": {
     "start": "2026-03-30",
     "end": "2026-05-31"
@@ -743,11 +772,11 @@ const DATA = {
             "Ernst",
             "Wybe"
           ],
-          "end": "2026-05-20",
+          "end": "2026-04-29",
           "days": 21,
           "priority": "M",
           "depends_on": [],
-          "status": "on-track",
+          "status": "delayed",
           "owner": "Sander",
           "system_level": "Mechanical system",
           "project": "BB1-V2"
@@ -832,130 +861,130 @@ const DATA = {
           "id": "T17",
           "task": "BB-1V2 full system validation (EH+EEC)",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
-          "status": "on-track"
+          "end": "2026-05-08",
+          "system_level": "Total system",
+          "project": "BB1-V2",
+          "owner": "Mathijs",
+          "status": "delayed"
         },
         {
           "id": "T18",
           "task": "MBD actuator testing",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-04-17",
+          "system_level": "Mechanical system",
+          "project": "BB1-V2",
+          "owner": "Camilo",
           "status": "on-track"
         },
         {
           "id": "T19",
           "task": "EEC upgrade results evaluated",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-15",
+          "system_level": "Harvester controller system",
+          "project": "Spark",
+          "owner": "Mathijs",
           "status": "on-track"
         },
         {
           "id": "T20",
           "task": "MB validation",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-04-17",
+          "system_level": "Harvester controller system",
+          "project": "Spark",
+          "owner": "Mathijs",
           "status": "on-track"
         },
         {
           "id": "T21",
           "task": "EEC validated",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-05",
+          "system_level": "Harvester controller system",
+          "project": "Spark",
+          "owner": "Mathijs",
           "status": "on-track"
         },
         {
           "id": "T22",
-          "task": "First integrated test (ctrl+fw+EEC)",
+          "task": "First integrated test (controller+firmware+EEC)",
           "person": [],
-          "days": 0,
+          "days": 3,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-08",
+          "system_level": "Harvester controller system",
+          "project": "Spark",
+          "owner": "Mathijs",
           "status": "on-track"
         },
         {
           "id": "T23",
-          "task": "First EWS-BEH power measurement test",
+          "task": "First EWS-VEH power measurement test",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-08",
+          "system_level": "EWS-B",
+          "project": "Spark",
+          "owner": "Niels",
           "status": "on-track"
         },
         {
           "id": "T24",
           "task": "Controller continued testing",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-04-24",
+          "system_level": "Harvester controller system",
+          "project": "Spark",
+          "owner": "Wybe",
           "status": "on-track"
         },
         {
           "id": "T25",
           "task": "First data dashboard testing",
           "person": [],
-          "days": 0,
+          "days": 10,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-14",
+          "system_level": "EWS-B",
+          "project": "Spark",
+          "owner": "Matthijs",
           "status": "on-track"
         },
         {
           "id": "T26",
           "task": "Delay buffer (controller)",
           "person": [],
-          "days": 0,
+          "days": 5,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-15",
+          "system_level": "Harvester controller system",
+          "project": "Spark",
+          "owner": "Wybe",
           "status": "on-track"
         },
         {
@@ -965,10 +994,10 @@ const DATA = {
           "days": 0,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-22",
+          "system_level": "Mechanical system",
+          "project": "Spark",
+          "owner": "Ernst",
           "status": "on-track"
         },
         {
@@ -978,10 +1007,10 @@ const DATA = {
           "days": 0,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-22",
+          "system_level": "Total system",
+          "project": "Spark",
+          "owner": "Wybe",
           "status": "on-track"
         },
         {
@@ -991,10 +1020,10 @@ const DATA = {
           "days": 0,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-29",
+          "system_level": "Mechanical system",
+          "project": "Spark",
+          "owner": "Ernst",
           "status": "on-track"
         },
         {
@@ -1004,10 +1033,10 @@ const DATA = {
           "days": 0,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-22",
+          "system_level": "Total system",
+          "project": "Spark",
+          "owner": "Wybe",
           "status": "on-track"
         },
         {
@@ -1017,10 +1046,10 @@ const DATA = {
           "days": 0,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-29",
+          "system_level": "Total system",
+          "project": "Spark",
+          "owner": "Sander",
           "status": "on-track"
         },
         {
@@ -1030,10 +1059,10 @@ const DATA = {
           "days": 0,
           "priority": "M",
           "depends_on": [],
-          "end": "",
-          "system_level": "",
-          "project": "",
-          "owner": "",
+          "end": "2026-05-29",
+          "system_level": "Total system",
+          "project": "Spark",
+          "owner": "Sander",
           "status": "on-track"
         }
       ]
@@ -1535,7 +1564,7 @@ function renderCalRow(tr, item, cat, color) {
 
   if (hasEnd) {
     const endDt = parseDate(item.end);
-    const startDt = addDays(endDt, -item.days);
+    const startDt = addDays(endDt, -item.days + 1);
     const isDelivery = cat === 'Hardware Deliveries';
     const waitColor = lighten(color);
 
@@ -1544,7 +1573,7 @@ function renderCalRow(tr, item, cat, color) {
       const td = document.createElement('td');
       td.className = 'cal';
       if (isWeekend(dt)) td.classList.add('we');
-      if (dt >= startDt && dt < endDt) {
+      if (dt >= startDt && dt <= endDt) {
         td.classList.add('bar');
         const progress = daysBetween(startDt, dt) / item.days;
         if (isDelivery && progress < 0.7) {
@@ -1655,7 +1684,7 @@ function drawDependencies() {
 function getBarEndX(item, headerCells, wrapperRect, wrapper) {
   if (!item.end || !item.end.length) return null;
   const endDt = parseDate(item.end);
-  const endOffset = daysBetween(calStart, endDt) - 1;
+  const endOffset = daysBetween(calStart, endDt);
   const idx = DATA_COLS + endOffset;
   if (idx < 0 || idx >= headerCells.length) return null;
   const cell = headerCells[idx];
@@ -1666,7 +1695,7 @@ function getBarEndX(item, headerCells, wrapperRect, wrapper) {
 function getBarStartX(item, headerCells, wrapperRect, wrapper) {
   if (!item.end || !item.end.length) return null;
   const endDt = parseDate(item.end);
-  const startDt = addDays(endDt, -item.days);
+  const startDt = addDays(endDt, -item.days + 1);
   const startOffset = daysBetween(calStart, startDt);
   const idx = DATA_COLS + startOffset;
   if (idx < 0 || idx >= headerCells.length) return null;
@@ -1815,7 +1844,7 @@ function renderCurrentPriorities() {
       const owner = item.owner || '';
       if (!owner) return; // skip tasks without an owner
       const endDt = parseDate(item.end);
-      const startDt = addDays(endDt, -item.days);
+      const startDt = addDays(endDt, -item.days + 1);
       // Include tasks that are currently active or upcoming (not yet ended)
       if (endDt <= now && status !== 'delayed') return;
       if (!personTasks[owner]) personTasks[owner] = [];
@@ -1978,7 +2007,7 @@ function renderLegend() {
 
   document.getElementById('footer').textContent =
     'Click any cell to edit • Bars update instantly • Changes auto-saved in browser • Use Save to File to write to disk • ' +
-    'Last generated: 2026-04-08 13:55' +
+    'Last generated: 2026-04-13 13:24' +
     (localStorage.getItem(STORAGE_KEY) ? ' • ⚠ You have unsaved browser edits (use Save or Reset)' : '');
 }
 

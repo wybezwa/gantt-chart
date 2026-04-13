@@ -1,6 +1,6 @@
-# Sander Roadmap — Next 2 Months (W14–W22)
+# 2 month roadmap
 
-> Auto-generated from `gantt_data.json` on 2026-04-08 13:55
+> Auto-generated from `gantt_data.json` on 2026-04-13 13:24
 > Calendar range: 2026-03-30 to 2026-05-31
 
 ## Milestones
@@ -30,7 +30,7 @@
 | T9 | MB board (ordered → delivered) |  |  | Mathijs | 2026-04-08 | 14 | M | ✔️ | — |
 | T10 | EEC board (ordered → delivered) |  |  | Mathijs | 2026-05-01 | 14 | M | ✅ | — |
 | T11 | Spark parts (ordered → delivered) | Spark | Total system | Sander | 2026-05-20 | 21 | H | ✅ | T34 |
-| T39 | BB1-V3 order parts (ordered → delivered) | BB1-V2 | Mechanical system | Sander | 2026-05-20 | 21 | M | ✅ | — |
+| T39 | BB1-V3 order parts (ordered → delivered) | BB1-V2 | Mechanical system | Sander | 2026-04-29 | 21 | M | ⚠️ | — |
 
 ## Assembly & Build
 
@@ -45,22 +45,22 @@
 
 | ID | Task | Project | System Level | Owner | End | Days | Priority | Status | Depends On |
 |:---|:-----|:--------|:-------------|:------|:----|-----:|:--------:|:------:|:-----------|
-| T17 | BB-1V2 full system validation (EH+EEC) |  |  |  |  | 0 | M | ✅ | — |
-| T18 | MBD actuator testing |  |  |  |  | 0 | M | ✅ | — |
-| T19 | EEC upgrade results evaluated |  |  |  |  | 0 | M | ✅ | — |
-| T20 | MB validation |  |  |  |  | 0 | M | ✅ | — |
-| T21 | EEC validated |  |  |  |  | 0 | M | ✅ | — |
-| T22 | First integrated test (ctrl+fw+EEC) |  |  |  |  | 0 | M | ✅ | — |
-| T23 | First EWS-BEH power measurement test |  |  |  |  | 0 | M | ✅ | — |
-| T24 | Controller continued testing |  |  |  |  | 0 | M | ✅ | — |
-| T25 | First data dashboard testing |  |  |  |  | 0 | M | ✅ | — |
-| T26 | Delay buffer (controller) |  |  |  |  | 0 | M | ✅ | — |
-| T27 | Spark first mechanical testing |  |  |  |  | 0 | M | ✅ | — |
-| T28 | First Spark + Controller system test |  |  |  |  | 0 | M | ✅ | — |
-| T29 | Further Spark mechanical testing |  |  |  |  | 0 | M | ✅ | — |
-| T30 | Full integrated test (Mech+EEC+Ctrl) |  |  |  |  | 0 | M | ✅ | — |
-| T31 | Final total system test + endurance |  |  |  |  | 0 | M | ✅ | — |
-| T32 | Full system test with EWS-B + server |  |  |  |  | 0 | M | ✅ | — |
+| T17 | BB-1V2 full system validation (EH+EEC) | BB1-V2 | Total system | Mathijs | 2026-05-08 | 5 | M | ⚠️ | — |
+| T18 | MBD actuator testing | BB1-V2 | Mechanical system | Camilo | 2026-04-17 | 5 | M | ✅ | — |
+| T19 | EEC upgrade results evaluated | Spark | Harvester controller system | Mathijs | 2026-05-15 | 5 | M | ✅ | — |
+| T20 | MB validation | Spark | Harvester controller system | Mathijs | 2026-04-17 | 5 | M | ✅ | — |
+| T21 | EEC validated | Spark | Harvester controller system | Mathijs | 2026-05-05 | 5 | M | ✅ | — |
+| T22 | First integrated test (controller+firmware+EEC) | Spark | Harvester controller system | Mathijs | 2026-05-08 | 3 | M | ✅ | — |
+| T23 | First EWS-VEH power measurement test | Spark | EWS-B | Niels | 2026-05-08 | 5 | M | ✅ | — |
+| T24 | Controller continued testing | Spark | Harvester controller system | Wybe | 2026-04-24 | 5 | M | ✅ | — |
+| T25 | First data dashboard testing | Spark | EWS-B | Matthijs | 2026-05-14 | 10 | M | ✅ | — |
+| T26 | Delay buffer (controller) | Spark | Harvester controller system | Wybe | 2026-05-15 | 5 | M | ✅ | — |
+| T27 | Spark first mechanical testing | Spark | Mechanical system | Ernst | 2026-05-22 | 0 | M | ✅ | — |
+| T28 | First Spark + Controller system test | Spark | Total system | Wybe | 2026-05-22 | 0 | M | ✅ | — |
+| T29 | Further Spark mechanical testing | Spark | Mechanical system | Ernst | 2026-05-29 | 0 | M | ✅ | — |
+| T30 | Full integrated test (Mech+EEC+Ctrl) | Spark | Total system | Wybe | 2026-05-22 | 0 | M | ✅ | — |
+| T31 | Final total system test + endurance | Spark | Total system | Sander | 2026-05-29 | 0 | M | ✅ | — |
+| T32 | Full system test with EWS-B + server | Spark | Total system | Sander | 2026-05-29 | 0 | M | ✅ | — |
 
 ## Firmware & Software
 
